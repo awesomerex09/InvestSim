@@ -23,17 +23,19 @@
 
 ## 步驟 2：啟用 Google 登入（Authentication）
 
-1. 在 Firebase Console 左側選單，點擊「Build」→「Authentication」
-2. 點擊「開始使用」
-3. 在「Sign-in method」標籤，找到「Google」，點擊右側的開關啟用
-4. 填入「專案支援電子郵件」（你的 Gmail）
+1. 在 Firebase Console 左側選單，點擊「建構 (Build)」展開選單，然後選擇「Authentication (驗證)」
+   *(提示：可能會有個 👥 兩個人像的圖示，如果在左側選單找不到「建構」，請直接找「Authentication」)*
+2. 點擊畫面中間的「開始使用 (Get started)」
+3. 在「Sign-in method」標籤中，找到「Google」，點擊右側的開關啟用
+4. 填寫「專案支援電子郵件」（下拉選擇你的 Gmail）
 5. 點擊「儲存」
 
 ---
 
 ## 步驟 3：建立 Firestore 資料庫
 
-1. 在左側選單點擊「Build」→「Firestore Database」
+1. 在左側選單點擊「建構 (Build)」→「Firestore Database」
+   *(提示：橘色的資料庫圖示)*
 2. 點擊「建立資料庫」
 3. 選擇「以測試模式開始」（之後我們會設定正式規則）
 4. 選擇伺服器位置：選擇「asia-east1」（台灣最近）
