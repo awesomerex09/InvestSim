@@ -57,7 +57,7 @@
 
       <!-- Start Game -->
       <button id="btn-start-game" class="btn btn-primary btn-lg" style="width:100%;">
-        新遊戲
+        開始新遊戲
       </button>
 
       <!-- Guest note -->
@@ -89,25 +89,15 @@
 
 
 
-      <!-- Initial Capital -->
+      <!-- Seed Code -->
       <div>
-        <div class="action-group-title">起始資金（萬元）</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;" id="capital-grid">
-          <button class="btn btn-ghost capital-btn selected" data-val="50">50 萬</button>
-          <button class="btn btn-ghost capital-btn" data-val="100">100 萬</button>
-          <button class="btn btn-ghost capital-btn" data-val="300">300 萬</button>
-          <button class="btn btn-ghost capital-btn" data-val="1000">1000 萬</button>
-        </div>
+        <div class="action-group-title">種子碼 (可選)</div>
+        <input type="text" id="input-seed" class="input mt-2" placeholder="留空將隨機生成" maxlength="20" />
+        <p class="caption mt-2" style="color: var(--c-text-2);">相同的種子碼將產出相同的出生地與初始屬性（顏值、智力、體質等）。</p>
       </div>
 
-      <!-- Life Goal -->
-      <div>
-        <div class="action-group-title">你的人生目標</div>
-        <input type="text" id="input-goal" class="input mt-2" placeholder="例如：在 40 歲達到財務自由..." maxlength="50" value="在 40 歲達到財務自由" />
-      </div>
-
-      <button id="btn-start-simulation" class="btn btn-primary btn-lg w-full">
-        🚀 開始模擬！
+      <button id="btn-start-simulation" class="btn btn-primary btn-lg w-full" style="margin-top: 16px;">
+        🚀 投胎出生！
       </button>
 
     </div>
@@ -142,8 +132,8 @@
         <div id="market-ticker"></div>
 
         <div style="display:flex; align-items:center; gap:12px;">
-          <div id="header-user" class="caption color-mute"></div>
-          <button id="btn-pause" class="btn btn-sm btn-ghost">⏸ 暫停</button>
+          <div id="header-user" class="caption color-mute" style="cursor: pointer;"></div>
+          <button id="btn-save" class="btn btn-sm btn-ghost">💾 手動存檔</button>
         </div>
       </header>
 
@@ -161,6 +151,10 @@
         <div class="chart-container" style="height:80px; background:var(--c-surface); border-radius:var(--r-md); border:1px solid var(--c-border); overflow:hidden;">
           <canvas id="networth-chart" style="width:100%; height:80px;"></canvas>
         </div>
+
+        <!-- Life Stats -->
+        <div id="life-stats-container" class="stats-row" style="margin-bottom: 8px;"></div>
+        <div style="margin-bottom: 16px; font-size: 0.8rem; color: var(--c-text-2); text-align: center;">基因種子碼：<span id="dashboard-seed" class="font-mono" style="color: var(--c-accent);"></span></div>
 
         <!-- Asset List -->
         <div id="asset-list" class="flex-col gap-2"></div>
@@ -301,6 +295,10 @@
           </div>
         </div>
       </aside>
+
+      <!-- Assistive Touch Button for Mobile -->
+      <button id="btn-assistive-touch" class="btn-assistive-touch">📱</button>
+
 
     </div>
   </section>
@@ -476,6 +474,14 @@
       });
 
       document.getElementById('btn-start-game')?.addEventListener('click', () => {
+        if (localStorage.getItem('investsim_save')) {
+          if (!confirm('開始新遊戲將會覆蓋您目前的存檔，確定要繼續嗎？')) {
+            return;
+          }
+          // Clear save if starting new game
+          window.gameEngine.clearState();
+          document.getElementById('btn-continue-game').style.display = 'none';
+        }
         window.ui.showScreen('setup');
       });
 
@@ -504,7 +510,50 @@
 
       // ── Game Screen Events ────────────────────────────────
       document.getElementById('btn-next-month')?.addEventListener('click', advanceMonth);
+      document.getElementById('btn-save')?.addEventListener('click', () => {
+        window.gameEngine.saveState();
+        window.ui.showToast('💾 遊戲已儲存！', 'success');
+      });
 
+      // Mobile UX
+      document.getElementById('header-user')?.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          document.querySelector('.panel-portfolio')?.classList.toggle('active');
+        }
+      });
+
+      const btnTouch = document.getElementById('btn-assistive-touch');
+      const panelActions = document.querySelector('.panel-actions');
+      if (btnTouch && panelActions) {
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        btnTouch.addEventListener('click', () => {
+          if (!isDragging) panelActions.classList.toggle('active');
+        });
+
+        btnTouch.addEventListener('touchstart', (e) => {
+          isDragging = false;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          initialX = btnTouch.offsetLeft;
+          initialY = btnTouch.offsetTop;
+        }, {passive: true});
+
+        btnTouch.addEventListener('touchmove', (e) => {
+          const dx = e.touches[0].clientX - startX;
+          const dy = e.touches[0].clientY - startY;
+          if (Math.abs(dx) > 10 || Math.abs(dy) > 10) isDragging = true;
+
+          if (isDragging) {
+            e.preventDefault(); // prevent scroll
+            btnTouch.style.left = initialX + dx + 'px';
+            btnTouch.style.top = initialY + dy + 'px';
+            btnTouch.style.right = 'auto';
+            btnTouch.style.bottom = 'auto';
+          }
+        }, {passive: false});
+      }
       // Trade Buttons
       const tradeMap = {
         'action-buy-tw':     ['buy', 'twStock',    '台股'],
@@ -544,15 +593,11 @@
       // Init DB service
       await window.dbService.init(window.authService.app);
 
-      const goal = document.getElementById('input-goal')?.value || '財務自由';
+      const seed = document.getElementById('input-seed')?.value || Math.random().toString(36).substring(2, 8).toUpperCase();
 
       try {
         document.getElementById('loading-status').textContent = '正在從雲端同步最新事件庫...';
-        await window.gameEngine.newGame({
-          style:       selectedStyle,
-          initialCash: selectedCapital,
-          goal
-        });
+        await window.gameEngine.newGame({ seed });
 
         // Update user profile if logged in
         if (window.authService.user) {
@@ -563,6 +608,8 @@
 
         // Reset UI chart data
         window.ui.chartData = [];
+        const feed = document.getElementById('event-feed');
+        if (feed) feed.innerHTML = '';
 
         document.getElementById('loading-status').textContent = '初始化市場引擎...';
         await sleep(800);
@@ -571,7 +618,16 @@
         window.ui.renderGame();
 
         // Render initial "game start" event
-        window.ui.renderEvent(null, {});
+        const s = window.gameEngine.state;
+        const birthEvent = {
+          id: 'event-birth',
+          icon: '👶',
+          sentiment: 'neutral',
+          title: '降生在這個世界',
+          description: `伴隨著哭聲，你出生在 **${s.birthplace}**。<br><br><b>初始天賦：</b><br>顏值：${s.lifeStats.appearance}<br>智力：${s.lifeStats.intelligence}<br>體質：${s.lifeStats.constitution}<br><br>這是一段全新的旅程，你的基因種子碼是 <code style="color:var(--c-accent);">${s.seed}</code>。`,
+          choices: []
+        };
+        window.ui.renderEvent(birthEvent, {});
 
         window.ui.showToast('🎮 遊戲開始！點擊「下一個月」推進時間。', 'info', 4000);
 

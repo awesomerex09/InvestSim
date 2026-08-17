@@ -68,9 +68,21 @@ class UI {
    */
   renderGame() {
     this.renderPortfolio();
+    this.renderLifeStats();
     this.renderTicker();
     this.renderTimeLine();
     this.renderStats();
+    
+    // Handle childhood locked state
+    const actionsPanel = document.querySelector('.panel-actions');
+    const touchBtn = document.getElementById('btn-assistive-touch');
+    if (window.gameEngine.state.age < 18) {
+      if (actionsPanel) actionsPanel.classList.add('locked');
+      if (touchBtn) touchBtn.style.display = 'none';
+    } else {
+      if (actionsPanel) actionsPanel.classList.remove('locked');
+      if (touchBtn && window.innerWidth <= 768) touchBtn.style.display = 'flex';
+    }
   }
 
   renderPortfolio() {
@@ -87,7 +99,7 @@ class UI {
     // Return badge
     const ret = document.getElementById('portfolio-return');
     if (ret) {
-      const pct = (nw / s.startNetWorth - 1) * 100;
+      const pct = s.startNetWorth > 0 ? (nw / s.startNetWorth - 1) * 100 : (nw > 0 ? 100 : 0);
       ret.textContent = GameEngine.formatPct(pct);
       ret.className   = 'stat-badge ' + (pct >= 0 ? 'stat-up' : 'stat-down');
     }
@@ -123,6 +135,29 @@ class UI {
     }).join('');
   }
 
+  renderLifeStats() {
+    const ls = window.gameEngine.state.lifeStats;
+    const container = document.getElementById('life-stats-container');
+    if (!container || !ls) return;
+
+    const items = [
+      { key: 'appearance', name: '顏值', icon: '✨' },
+      { key: 'intelligence', name: '智力', icon: '🧠' },
+      { key: 'constitution', name: '體質', icon: '💪' },
+      { key: 'happiness', name: '快樂', icon: '😊' }
+    ];
+
+    container.innerHTML = items.map(i => `
+      <div class="stat-cell">
+        <div class="stat-cell-value" style="font-size: 1.1rem; text-shadow: 0 0 10px var(--c-accent-glow);">${i.icon} ${Math.max(0, ls[i.key])}</div>
+        <div class="stat-cell-label">${i.name}</div>
+      </div>
+    `).join('');
+
+    const seedEl = document.getElementById('dashboard-seed');
+    if (seedEl) seedEl.textContent = window.gameEngine.state.seed;
+  }
+
   renderTicker() {
     const prices = window.gameEngine.state.prices;
 
@@ -154,19 +189,28 @@ class UI {
     const s = window.gameEngine.state;
     const timeEl = document.getElementById('game-time');
     if (timeEl) {
-      timeEl.textContent = `第 ${s.year} 年 ${s.month} 月`;
+      if (s.age < 18) {
+        timeEl.textContent = `第 ${s.year} 年 ( ${s.age} 歲 )`;
+      } else {
+        timeEl.textContent = `第 ${s.year} 年 ${s.month} 月 ( ${s.age} 歲 )`;
+      }
+    }
+
+    const nextBtn = document.getElementById('btn-next-month');
+    if (nextBtn) {
+      nextBtn.innerHTML = s.age < 18 ? '長大一歲 ▶' : '下一個月 ▶';
     }
 
     // Year progress bar
     const progressEl = document.getElementById('year-progress');
     if (progressEl) {
-      progressEl.style.width = `${(s.month / 12 * 100).toFixed(1)}%`;
+      progressEl.style.width = s.age < 18 ? '100%' : `${(s.month / 12 * 100).toFixed(1)}%`;
     }
 
-    // Life progress (35 year max)
+    // Life progress (up to 100 max)
     const lifeEl = document.getElementById('life-progress');
     if (lifeEl) {
-      lifeEl.style.width = `${(s.year / 35 * 100).toFixed(1)}%`;
+      lifeEl.style.width = `${Math.min(s.age, 100)}%`;
     }
   }
 
@@ -205,7 +249,7 @@ class UI {
       card.className = 'event-card';
       const nw   = window.gameEngine.getNetWorth();
       const s    = window.gameEngine.state;
-      const pct  = (nw / s.startNetWorth - 1) * 100;
+      const pct  = s.startNetWorth > 0 ? (nw / s.startNetWorth - 1) * 100 : (nw > 0 ? 100 : 0);
       card.innerHTML = `
         <div class="event-header">
           <div class="event-icon neutral">📊</div>
@@ -262,11 +306,13 @@ class UI {
       btn.addEventListener('click', () => {
         const choiceIdx = parseInt(btn.dataset.choice);
         window.gameEngine.applyEventChoice(event, choiceIdx);
-        // Disable all choices in this card
-        card.querySelectorAll('.choice-btn').forEach(b => {
-          b.disabled = true;
-          b.style.opacity = b === btn ? '1' : '0.35';
-        });
+        const choice = event.choices[choiceIdx];
+        const choicesContainer = card.querySelector('.event-choices');
+        choicesContainer.innerHTML = `
+          <div class="caption mt-2" style="border-left: 2px solid var(--c-accent); padding-left: 8px; color: var(--c-text-2);">
+            你選擇了：<strong style="color: var(--c-text);">${choice.text}</strong>
+          </div>
+        `;
         // Re-render portfolio
         this.renderPortfolio();
         this.renderStats();

@@ -20,15 +20,33 @@ class GameEngine {
   /**
    * Load dynamic config and set up a fresh game state.
    * @param {Object} opts
-   * @param {string} opts.style       - 'conservative' | 'balanced' | 'aggressive' | 'gambler'
-   * @param {number} opts.initialCash - starting cash in NTD (thousands)
-   * @param {string} opts.goal        - player's life goal text
+   * @param {string} opts.seed - Random seed for generating life stats
    */
-  async newGame({ style = 'balanced', initialCash = 1000, goal = '財務自由' } = {}) {
+  async newGame({ seed = '' } = {}) {
+    if (!seed) {
+      seed = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    
+    // Simple Hash for Seed (cyrb128 logic)
+    let h1 = 1779033703;
+    for (let i = 0; i < seed.length; i++) {
+      let k = seed.charCodeAt(i);
+      h1 = Math.imul(h1 ^ k, 597399067);
+    }
+    let seedNum = (h1 ^ (h1 >>> 16)) >>> 0;
+    
+    // PRNG (Mulberry32)
+    const random = () => {
+      let t = seedNum += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
     // Fetch config
     const config = await window.dbService.fetchDynamicConfig();
-    this.events       = config.events;
-    this.achievements = config.achievements;
+    this.events       = (config.events || []).filter(e => e.enabled !== false);
+    this.achievements = (config.achievements || []).filter(a => a.enabled !== false);
 
     // Reset log tracker
     window.logTracker.reset();
@@ -42,13 +60,35 @@ class GameEngine {
       gold:        100
     };
 
-    const cashNTD = initialCash * 10000; // convert 萬 to 元
+    // Generate Life Stats (1-100)
+    const randInt = (min, max) => Math.floor(random() * (max - min + 1)) + min;
+    const appearance = randInt(20, 100);
+    const intelligence = randInt(20, 100);
+    const constitution = randInt(20, 100);
+    const happiness = 80;
+    
+    const birthplaces = ['台北市', '新北市', '桃園市', '台中市', '台南市', '高雄市', '新竹市', '花蓮縣', '台東縣'];
+    const birthplace = birthplaces[randInt(0, birthplaces.length - 1)];
+    
+    // At birth, you have 0 cash. You get allowance later.
+    const cashNTD = 0;
 
     this.state = {
       // Meta
       month:        1,
       year:         1,
-      playerGoal:   goal,
+      age:          0,
+      seed:         seed,
+      birthplace:   birthplace,
+      
+      // Life Stats
+      lifeStats: {
+        appearance,
+        intelligence,
+        constitution,
+        happiness
+      },
+
       startNetWorth: cashNTD,
 
       // Portfolio (in NTD value)
@@ -90,6 +130,9 @@ class GameEngine {
       // Achievements unlocked this game
       achievements:  [],
 
+      // Events triggered this game (IDs)
+      triggeredEvents: [],
+
       // Current active event (if any)
       activeEvent:   null,
 
@@ -98,7 +141,7 @@ class GameEngine {
       endReason:     null,
 
       // Random seed (for reproducibility)
-      seed: Date.now()
+      // seed is already set above
     };
 
     return this.state;
@@ -123,43 +166,77 @@ class GameEngine {
       ? this.events.find(e => e.id === forcedEventId)
       : this._pickEvent();
 
-    // Step 2: Apply market movement (base drift + event shock)
-    const priceChanges = this._simulateMarket(event);
-
-    // Step 3: Update portfolio values based on new prices
-    this._updatePortfolioValues(priceChanges);
-
-    // Step 4: Apply passive income (dividends, rent)
-    this._applyPassiveIncome();
-
-    // Step 5: Apply monthly living costs
-    this._applyLivingCosts();
-
-    // Step 6: Update stats
-    this._updateStats();
-
-    // Step 7: Advance time
-    s.month++;
-    if (s.month > 12) {
-      s.month = 1;
-      s.year++;
-      s.stats.holdYears++;
+    // Step 2: Evaluate effectStr if present (this handles custom logic and returns market shocks)
+    let marketShock = {};
+    if (event && event.effectStr) {
+      try {
+        const checkFn = new Function('s', event.effectStr);
+        const result = checkFn(s);
+        if (result && typeof result === 'object') {
+          marketShock = result;
+        }
+      } catch (e) {
+        console.warn(`Event ${event.id} effectStr error:`, e);
+      }
+    } else if (event && event.effects) {
+      // Backward compatibility for old events with static effects
+      const eff = event.effects;
+      if (eff.appearance) s.lifeStats.appearance += parseInt(eff.appearance);
+      if (eff.intelligence) s.lifeStats.intelligence += parseInt(eff.intelligence);
+      if (eff.constitution) s.lifeStats.constitution += parseInt(eff.constitution);
+      if (eff.happiness) s.lifeStats.happiness += parseInt(eff.happiness);
+      if (eff.cash) s.portfolio.cash += parseInt(eff.cash) * 10000;
+      marketShock = eff;
     }
 
-    // Step 8: Log market snapshot
+    // Mark event as triggered
+    if (event && !s.triggeredEvents.includes(event.id)) {
+      s.triggeredEvents.push(event.id);
+    }
+
+    // Step 3: Apply market movement (base drift + event shock)
+    const priceChanges = this._simulateMarket(marketShock);
+
+    // Step 4: Update portfolio values based on new prices
+    this._updatePortfolioValues(priceChanges);
+
+    // Step 5: Apply passive income (dividends, rent)
+    this._applyPassiveIncome();
+
+    // Step 6: Apply monthly living costs
+    this._applyLivingCosts();
+
+    // Step 7: Update stats
+    this._updateStats();
+
+    // Step 8: Advance time
+    if (s.age < 18) {
+      s.year++;
+      s.age++;
+    } else {
+      s.month++;
+      if (s.month > 12) {
+        s.month = 1;
+        s.year++;
+        s.age++;
+        s.stats.holdYears++;
+      }
+    }
+
+    // Step 9: Log market snapshot
     window.logTracker.marketSnapshot(
       `${s.year}Y${s.month}M`,
       { ...s.portfolio },
       { ...s.prices }
     );
 
-    // Step 9: Check end conditions
+    // Step 10: Check end conditions
     this._checkEndConditions();
 
-    // Step 10: Check achievements
+    // Step 11: Check achievements
     this._checkAchievements();
 
-    // Step 11: Auto-save locally
+    // Step 12: Auto-save locally
     this.saveState();
 
     return { event, priceChanges };
@@ -170,11 +247,46 @@ class GameEngine {
    * @returns {Object|null}
    */
   _pickEvent() {
+    const s = this.state;
+    
+    // Filter events by stat requirements, age_range, and prerequisites
+    let validEvents = this.events.filter(e => {
+      // Check age range
+      if (e.triggerType === 'age_range') {
+        if (s.age < (e.minAge || 0) || s.age > (e.maxAge || 100)) return false;
+      }
+      
+      // Check prerequisites
+      if (e.prerequisites && e.prerequisites.length > 0) {
+        const hasAllReqs = e.prerequisites.every(req => s.triggeredEvents.includes(req));
+        if (!hasAllReqs) return false;
+      }
+
+      // Check legacy statReq
+      if (!e.statReq || e.statReq.stat === 'none') return true;
+      const req = e.statReq;
+      if (req.stat === 'appearance') return s.lifeStats.appearance >= req.min;
+      if (req.stat === 'intelligence') return s.lifeStats.intelligence >= req.min;
+      if (req.stat === 'constitution') return s.lifeStats.constitution >= req.min;
+      if (req.stat === 'happiness') return s.lifeStats.happiness >= req.min;
+      return true;
+    });
+
+    // Check fixed age events first
+    // Note: since age < 18 ticks by year, we just check if it's month 1 (or age < 18 which is always month 1)
+    if (s.month === 1 || s.age < 18) {
+      const fixedEvent = validEvents.find(e => e.triggerType === 'fixed_age' && e.triggerAge === s.age && !s.triggeredEvents.includes(e.id));
+      if (fixedEvent) return fixedEvent;
+    }
+
+    // Filter out fixed events for random pool
+    validEvents = validEvents.filter(e => e.triggerType !== 'fixed_age');
+
     const roll = Math.random();
     let cumulative = 0;
 
     // Shuffle to avoid bias
-    const shuffled = [...this.events].sort(() => Math.random() - 0.5);
+    const shuffled = [...validEvents].sort(() => Math.random() - 0.5);
 
     for (const event of shuffled) {
       cumulative += event.probability || 0.1;
@@ -185,16 +297,16 @@ class GameEngine {
     if (Math.random() < 0.3) return null;
 
     // Return routine event
-    return this.events.find(e => e.type === 'routine') || null;
+    return validEvents.find(e => e.type === 'routine') || null;
   }
 
   /**
    * Simulate market price changes for this month.
    * Base: random walk with style-adjusted volatility + event shock
-   * @param {Object|null} event
+   * @param {Object} marketShock
    * @returns {Object} price changes in %
    */
-  _simulateMarket(event) {
+  _simulateMarket(marketShock) {
     // Base monthly drift (annualized ~7% for stocks, ~2% for real estate)
     const baseDrift = {
       twStock:    this._randNormal(0.006, 0.05),
@@ -209,10 +321,10 @@ class GameEngine {
       twStock: 0, usStock: 0, crypto: 0, realEstate: 0, gold: 0
     };
 
-    if (event && event.effects) {
-      Object.keys(event.effects).forEach(asset => {
+    if (marketShock) {
+      Object.keys(marketShock).forEach(asset => {
         if (asset in eventShock) {
-          eventShock[asset] = (event.effects[asset] || 0) / 100;
+          eventShock[asset] = (marketShock[asset] || 0) / 100;
         }
       });
     }
@@ -270,6 +382,7 @@ class GameEngine {
    * Deduct monthly living costs (~NTD 30,000/month).
    */
   _applyLivingCosts() {
+    if (this.state.age < 18) return; // 童年由父母養育
     const livingCost = 30000;
     this.state.portfolio.cash = Math.max(0, this.state.portfolio.cash - livingCost);
   }
@@ -300,28 +413,55 @@ class GameEngine {
     const netWorth = this.getNetWorth();
     const s = this.state;
 
-    // Bankruptcy: net worth below 50,000
-    if (netWorth < 50000) {
-      this._endGame('破產', '你的資產已跌至谷底，無力回天。');
+    // Bankruptcy: net worth below 0 (Debt)
+    if (netWorth < 0 && s.age >= 18) {
+      this._endGame('破產', '你背負了龐大債務，無力回天宣告破產。');
       return;
     }
 
     // Total margin call / forced liquidation
-    if (s.portfolio.cash <= 0 && netWorth < s.startNetWorth * 0.1) {
-      this._endGame('融資斷頭', '所有現金耗盡，持倉被強制平倉。');
+    if (s.portfolio.cash < 0 && s.age >= 18) {
+      this._endGame('負債', '現金耗盡且負債，生活無法繼續。');
       return;
     }
 
-    // Retirement: 35 years (420 months) or net worth > 50x start
-    if (s.year > 35) {
-      this._endGame('退休', '你走完了 35 年的投資人生。');
+    // Natural Death
+    if (this._checkDeath()) {
+      this._endGame('壽終正寢', `你走完了 ${s.age} 年的漫長人生。`);
       return;
     }
 
-    if (netWorth >= s.startNetWorth * 50) {
-      this._endGame('爆富退休', '你的資產成長了 50 倍，成為傳奇投資人！');
+    // Super Rich
+    const targetNetWorth = Math.max(100000000, s.startNetWorth * 50);
+    if (netWorth >= targetNetWorth) {
+      this._endGame('爆富退休', '你的資產突破天際，成為傳奇投資人！');
       return;
     }
+  }
+
+  /**
+   * Check for natural death probability.
+   */
+  _checkDeath() {
+    const s = this.state;
+    // Only roll once a year (at month 1, or during childhood where it ticks by year)
+    if (s.age >= 18 && s.month !== 1) return false;
+
+    let deathChance = 0;
+    if (s.age >= 100) deathChance = 0.5; // 50% chance each year
+    else if (s.age >= 90) deathChance = 0.15;
+    else if (s.age >= 80) deathChance = 0.05;
+    else if (s.age >= 70) deathChance = 0.02;
+    else if (s.age >= 60) deathChance = 0.005;
+    else if (s.age >= 50) deathChance = 0.001;
+    else if (s.age >= 30) deathChance = 0.0005;
+    else deathChance = 0.0001;
+
+    // Constitution modifier (con 50 is 1x, con 100 is 0.2x, con 0 is 5x)
+    const conMod = Math.max(0.1, (110 - s.lifeStats.constitution) / 60);
+    deathChance *= conMod;
+
+    return Math.random() < deathChance;
   }
 
   /**
@@ -353,29 +493,26 @@ class GameEngine {
     const total = nw;
     const port = s.portfolio;
 
-    const conditionMap = {
-      'a001': s.stats.holdYears >= 3 && s.stats.stopLossCount === 0,
-      'a002': s.stats.mdd < 10,
-      'a003': nw >= s.startNetWorth * 100,
-      'a004': port.realEstate > 0 && (s.stats.dividendsEarned / (nw - s.startNetWorth + 1)) >= 0.5,
-      'a005': this._isDiversified(),
-      'a006': s.stats.survivedBlackswan,
-      'a007': nw <= s.startNetWorth * 0.5,
-      'a008': s.stats.bottomFishing,
-      'a009': nw >= s.startNetWorth * 10, // simplified
-      'a010': total > 0 && (port.crypto / total) >= 0.6
-    };
-
     for (const achievement of this.achievements) {
       if (s.achievements.includes(achievement.id)) continue;
-      if (conditionMap[achievement.id]) {
+      
+      let conditionMet = false;
+      try {
+        // Evaluate the dynamic condition string (e.g., 's.age >= 30 && nw > 1000000')
+        // We provide s, nw, total, port in the scope
+        const checkFn = new Function('s', 'nw', 'total', 'port', `return ${achievement.conditionStr};`);
+        conditionMet = checkFn(s, nw, total, port);
+      } catch (e) {
+        console.warn(`Achievement ${achievement.id} condition error:`, e);
+      }
+
+      if (conditionMet) {
         s.achievements.push(achievement.id);
-        window.logTracker.achievement(achievement.id, achievement.name);
+        window.logTracker.achievement(achievement.id, achievement.title);
         window.ui?.showAchievementUnlock?.(achievement);
       }
     }
   }
-
   /**
    * Check if portfolio is diversified (4 asset classes each 15-35%).
    */
@@ -407,12 +544,39 @@ class GameEngine {
 
     const { portfolio, units, prices } = this.state;
     const netWorth = this.getNetWorth();
+    const s = this.state;
 
     // Apply effects
-    const eff = choice.effect || {};
+    let eff = {};
+    if (choice.effectStr) {
+      try {
+        const checkFn = new Function('s', 'nw', choice.effectStr);
+        const result = checkFn(s, netWorth);
+        if (result && typeof result === 'object') {
+          eff = result;
+        }
+      } catch (e) {
+        console.warn(`Choice effectStr error:`, e);
+      }
+    } else {
+      eff = choice.effect || {};
+    }
+
+    // Life Stats
+    if (eff.appearance) s.lifeStats.appearance += parseInt(eff.appearance);
+    if (eff.intelligence) s.lifeStats.intelligence += parseInt(eff.intelligence);
+    if (eff.constitution) s.lifeStats.constitution += parseInt(eff.constitution);
+    if (eff.happiness) s.lifeStats.happiness += parseInt(eff.happiness);
 
     // Cash income
-    if (eff.cash) portfolio.cash += Math.round(netWorth * eff.cash);
+    // If cash > 10 it's likely absolute (萬), otherwise relative percentage of net worth
+    if (eff.cash) {
+      if (Math.abs(eff.cash) > 10) {
+        portfolio.cash += eff.cash * 10000;
+      } else {
+        portfolio.cash += Math.round(netWorth * eff.cash);
+      }
+    }
 
     // Buy asset classes
     if (eff.twStock && eff.twStock > 0) {
