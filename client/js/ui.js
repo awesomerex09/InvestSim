@@ -243,10 +243,28 @@ class UI {
     const feed = document.getElementById('event-feed');
     if (!feed) return;
 
+    // Collapse existing cards into a single line summary
+    const existingCards = feed.querySelectorAll('.event-card, .quiet-card');
+    existingCards.forEach(c => {
+      const title = c.querySelector('.event-title')?.textContent || '平靜的一個月';
+      const meta = c.querySelector('.event-meta')?.textContent || '';
+      const selectedChoice = c.querySelector('.event-choices strong')?.textContent || '';
+      const hasButtons = c.querySelectorAll('.choice-btn').length > 0;
+      
+      c.className = 'collapsed-log';
+      if (selectedChoice) {
+        c.innerHTML = `<span class="log-meta">[${meta}]</span> <span class="log-title">${title}</span> — <span class="log-choice" style="color:var(--c-accent)">選擇了: ${selectedChoice}</span>`;
+      } else if (hasButtons) {
+        c.innerHTML = `<span class="log-meta">[${meta}]</span> <span class="log-title">${title}</span> — <span class="log-choice" style="color:var(--c-text-3)">(未作選擇)</span>`;
+      } else {
+        c.innerHTML = `<span class="log-meta">[${meta}]</span> <span class="log-title">${title}</span>`;
+      }
+    });
+
     if (!event) {
       // Quiet month — show a simple market update
       const card = document.createElement('div');
-      card.className = 'event-card';
+      card.className = 'quiet-card'; // Use quiet-card to distinguish before collapse
       const nw   = window.gameEngine.getNetWorth();
       const s    = window.gameEngine.state;
       const pct  = s.startNetWorth > 0 ? (nw / s.startNetWorth - 1) * 100 : (nw > 0 ? 100 : 0);
@@ -322,8 +340,8 @@ class UI {
     feed.prepend(card);
     feed.scrollTop = 0;
 
-    // Keep feed from growing too large
-    while (feed.children.length > 10) {
+    // Keep feed from growing too large (allow up to 50 logs for history)
+    while (feed.children.length > 50) {
       feed.removeChild(feed.lastChild);
     }
   }

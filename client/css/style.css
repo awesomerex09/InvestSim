@@ -502,18 +502,50 @@ body::before {
 .time-divider { width: 1px; height: 28px; background: var(--c-border); }
 
 /* Event Cards */
-.event-card {
+.event-card, .quiet-card {
   padding: var(--space-5);
   border-radius: var(--r-lg);
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   backdrop-filter: blur(16px);
   animation: event-enter var(--dur-slow) var(--ease-spring) both;
+  margin-bottom: var(--space-4);
+}
+.quiet-card {
+  padding: var(--space-4);
+  background: hsla(226, 28%, 12%, 0.6);
 }
 @keyframes event-enter {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Collapsed Log History */
+.collapsed-log {
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  border-radius: var(--r-md);
+  background: hsla(220, 20%, 15%, 0.4);
+  border-left: 3px solid var(--c-border-hi);
+  font-size: 0.8125rem;
+  color: var(--c-text-2);
+  animation: log-collapse 0.3s var(--ease-out) both;
+}
+@keyframes log-collapse {
+  from { opacity: 0; transform: scaleY(1.1); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+.collapsed-log .log-meta {
+  color: var(--c-text-3);
+  margin-right: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.collapsed-log .log-title {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
 
 .event-header {
   display: flex;
