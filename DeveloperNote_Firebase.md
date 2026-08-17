@@ -210,4 +210,17 @@ users/
 
 ---
 
+## 🛠 常見問題與錯誤排除
+
+### 錯誤：`auth/unauthorized-domain`
+**原因**：你當前用來測試的網址（例如 `127.0.0.1`）沒有被 Firebase 允許。
+**解法**：
+1. 回到 Firebase Console 的「Authentication (驗證)」。
+2. 點擊上方的「Settings (設定)」標籤。
+3. 在左邊選單點擊「Authorized domains (授權網域)」。
+4. 點擊「新增網域」，把你瀏覽器網址列上的 IP 或網域（例如 `127.0.0.1` 或 `localhost`）加進去，按下新增。
+*(注意：不需要加 `http://` 或 port 號，只需填寫 `127.0.0.1` 或 `localhost`)*
+
+---
+
 **如有任何問題，請在 GitHub Issues 提交。**
