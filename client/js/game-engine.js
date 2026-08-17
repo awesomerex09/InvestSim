@@ -42,41 +42,31 @@ class GameEngine {
       gold:        100
     };
 
-    // Style-based starting allocation
-    const allocations = {
-      conservative: { cash: 0.7,  twStock: 0.2,  usStock: 0.1,  crypto: 0,    realEstate: 0   },
-      balanced:     { cash: 0.4,  twStock: 0.25, usStock: 0.2,  crypto: 0.05, realEstate: 0.1 },
-      aggressive:   { cash: 0.1,  twStock: 0.3,  usStock: 0.3,  crypto: 0.2,  realEstate: 0.1 },
-      gambler:      { cash: 0.05, twStock: 0.1,  usStock: 0.1,  crypto: 0.75, realEstate: 0   }
-    };
-
-    const alloc = allocations[style] || allocations.balanced;
     const cashNTD = initialCash * 10000; // convert 萬 to 元
 
     this.state = {
       // Meta
       month:        1,
       year:         1,
-      playerStyle:  style,
       playerGoal:   goal,
       startNetWorth: cashNTD,
 
       // Portfolio (in NTD value)
       portfolio: {
-        cash:       Math.round(cashNTD * alloc.cash),
-        twStock:    Math.round(cashNTD * alloc.twStock),
-        usStock:    Math.round(cashNTD * alloc.usStock),
-        crypto:     Math.round(cashNTD * alloc.crypto),
-        realEstate: Math.round(cashNTD * alloc.realEstate),
+        cash:       cashNTD,
+        twStock:    0,
+        usStock:    0,
+        crypto:     0,
+        realEstate: 0,
         gold:       0
       },
 
       // Units held (shares / units)
       units: {
-        twStock:    alloc.twStock > 0 ? 100 : 0,
-        usStock:    alloc.usStock > 0 ? 100 : 0,
-        crypto:     alloc.crypto  > 0 ? 1   : 0,
-        realEstate: alloc.realEstate > 0 ? 1 : 0,
+        twStock:    0,
+        usStock:    0,
+        crypto:     0,
+        realEstate: 0,
         gold:       0
       },
 
@@ -168,6 +158,9 @@ class GameEngine {
 
     // Step 10: Check achievements
     this._checkAchievements();
+
+    // Step 11: Auto-save locally
+    this.saveState();
 
     return { event, priceChanges };
   }
@@ -338,6 +331,8 @@ class GameEngine {
     this.state.isEnded    = true;
     this.state.endReason  = reason;
     this.state.endMessage = message;
+    
+    this.clearState();
 
     // Trigger Firestore upload (fire-and-forget)
     if (window.authService?.user) {
@@ -588,6 +583,53 @@ class GameEngine {
       endReason:    this.state.endReason,
       playerStyle:  this.state.playerStyle
     };
+  }
+
+  // ────────────────────────────────────────────────────────
+  // LOCAL SAVE SYSTEM
+  // ────────────────────────────────────────────────────────
+  
+  saveState() {
+    if (!this.state || this.state.isEnded) return;
+    try {
+      const saveData = {
+        state: this.state,
+        logs: window.logTracker ? window.logTracker.getLogs() : []
+      };
+      localStorage.setItem('investsim_save', JSON.stringify(saveData));
+    } catch (e) {
+      console.warn('Failed to save game state', e);
+    }
+  }
+
+  async loadState() {
+    try {
+      const raw = localStorage.getItem('investsim_save');
+      if (!raw) return false;
+      
+      const saveData = JSON.parse(raw);
+      if (!saveData || !saveData.state) return false;
+      
+      // Re-fetch config to ensure events/achievements are loaded
+      const config = await window.dbService.fetchDynamicConfig();
+      this.events = config.events;
+      this.achievements = config.achievements;
+      
+      this.state = saveData.state;
+      
+      // Restore logs
+      if (window.logTracker && saveData.logs) {
+        window.logTracker.logs = saveData.logs;
+      }
+      return true;
+    } catch (e) {
+      console.error('Failed to load game state', e);
+      return false;
+    }
+  }
+  
+  clearState() {
+    localStorage.removeItem('investsim_save');
   }
 
   /** Format NTD number with 萬/億 */

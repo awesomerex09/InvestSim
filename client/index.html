@@ -50,9 +50,14 @@
         <button id="btn-sign-out" class="btn btn-sm btn-ghost" style="margin-left:auto;">登出</button>
       </div>
 
+      <!-- Continue Game (Hidden by default) -->
+      <button id="btn-continue-game" class="btn btn-success btn-lg" style="width:100%; display:none; margin-bottom: 8px;">
+        接續上次遊戲
+      </button>
+
       <!-- Start Game -->
       <button id="btn-start-game" class="btn btn-primary btn-lg" style="width:100%;">
-        以訪客開始
+        新遊戲
       </button>
 
       <!-- Guest note -->
@@ -82,32 +87,7 @@
         <p class="body color-mute mt-2">選擇你的風格，決定你的起點。</p>
       </div>
 
-      <!-- Investment Style -->
-      <div>
-        <div class="action-group-title">投資風格</div>
-        <div class="style-grid" id="style-grid">
-          <div class="style-card selected" data-style="conservative">
-            <div class="style-icon">🧘</div>
-            <div class="style-name">保守穩健型</div>
-            <div class="style-desc">高現金比例，定存、債券為主。安全但成長緩慢。</div>
-          </div>
-          <div class="style-card" data-style="balanced">
-            <div class="style-icon">⚖️</div>
-            <div class="style-name">均衡配置型</div>
-            <div class="style-desc">股票、ETF 為主，兼顧成長與風險控制。新手推薦。</div>
-          </div>
-          <div class="style-card" data-style="aggressive">
-            <div class="style-icon">🚀</div>
-            <div class="style-name">積極成長型</div>
-            <div class="style-desc">大量配置成長股、美股 ETF，承擔較高波動。</div>
-          </div>
-          <div class="style-card" data-style="gambler">
-            <div class="style-icon">🎰</div>
-            <div class="style-name">賭徒梭哈型</div>
-            <div class="style-desc">重倉加密貨幣、融資槓桿。高報酬高風險，極易爆倉。</div>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Initial Capital -->
       <div>
@@ -456,7 +436,31 @@
         }
       });
 
+      // Check for local save
+      if (localStorage.getItem('investsim_save')) {
+        const btnContinue = document.getElementById('btn-continue-game');
+        if (btnContinue) btnContinue.style.display = 'flex';
+      }
+
       // ── Splash Screen Events ──────────────────────────────
+      document.getElementById('btn-continue-game')?.addEventListener('click', async () => {
+        window.ui.showScreen('loading');
+        await window.dbService.init(window.authService.app);
+        
+        document.getElementById('loading-status').textContent = '讀取本地存檔中...';
+        const success = await window.gameEngine.loadState();
+        if (success) {
+          // Re-populate chart data
+          window.ui.chartData = [...window.gameEngine.state.stats.monthlyReturns];
+          window.ui.showScreen('game');
+          window.ui.renderGame();
+          window.ui.updateChart(window.gameEngine.getNetWorth());
+          window.ui.showToast('✅ 成功接續遊戲進度', 'success');
+        } else {
+          window.ui.showToast('❌ 讀取存檔失敗，存檔可能已損毀', 'error');
+          window.ui.showScreen('splash');
+        }
+      });
       document.getElementById('btn-google-login')?.addEventListener('click', async () => {
         try {
           await window.authService.signInWithGoogle();

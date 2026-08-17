@@ -9,26 +9,26 @@
 /* ── Design Tokens ──────────────────────────────────────── */
 :root {
   /* Colors */
-  --c-bg:          hsl(226, 30%, 7%);
-  --c-bg-2:        hsl(226, 28%, 10%);
-  --c-bg-3:        hsl(226, 24%, 14%);
-  --c-surface:     hsla(226, 28%, 18%, 0.75);
-  --c-surface-2:   hsla(226, 24%, 22%, 0.6);
-  --c-border:      hsla(220, 30%, 60%, 0.12);
-  --c-border-hi:   hsla(220, 80%, 70%, 0.25);
+  --c-bg:          hsl(220, 20%, 5%);
+  --c-bg-2:        hsl(220, 20%, 8%);
+  --c-bg-3:        hsl(220, 20%, 11%);
+  --c-surface:     hsla(45, 10%, 12%, 0.75);
+  --c-surface-2:   hsla(45, 15%, 16%, 0.6);
+  --c-border:      hsla(45, 80%, 40%, 0.15);
+  --c-border-hi:   hsla(45, 90%, 55%, 0.4);
 
-  --c-accent:      hsl(220, 90%, 60%);
-  --c-accent-2:    hsl(260, 80%, 65%);
-  --c-accent-glow: hsla(220, 90%, 60%, 0.3);
+  --c-accent:      hsl(45, 90%, 55%);
+  --c-accent-2:    hsl(35, 90%, 50%);
+  --c-accent-glow: hsla(45, 90%, 55%, 0.3);
 
   --c-up:          hsl(142, 70%, 45%);
   --c-down:        hsl(355, 75%, 55%);
   --c-warn:        hsl(40, 95%, 55%);
   --c-info:        hsl(200, 80%, 55%);
 
-  --c-text:        hsl(220, 20%, 92%);
-  --c-text-2:      hsl(220, 15%, 65%);
-  --c-text-3:      hsl(220, 10%, 45%);
+  --c-text:        hsl(45, 10%, 95%);
+  --c-text-2:      hsl(45, 15%, 70%);
+  --c-text-3:      hsl(45, 10%, 45%);
 
   /* Typography */
   --font:          'Inter', system-ui, sans-serif;
@@ -102,9 +102,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 10%,  hsla(220, 90%, 30%, 0.25) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 90%,  hsla(260, 80%, 30%, 0.2)  0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 60% 40%,  hsla(200, 80%, 25%, 0.15) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 20% 10%,  hsla(45, 90%, 20%, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 90%,  hsla(35, 80%, 25%, 0.12)  0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 60% 40%,  hsla(40, 70%, 15%, 0.15) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
   animation: bg-pulse 12s ease-in-out infinite alternate;
@@ -200,9 +200,9 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--c-accent) 0%, hsl(240, 85%, 60%) 100%);
-  color: #fff;
-  box-shadow: 0 2px 12px var(--c-accent-glow), inset 0 1px 0 hsla(255,100%,100%,0.15);
+  background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-2) 100%);
+  color: #000;
+  box-shadow: 0 2px 12px var(--c-accent-glow), inset 0 1px 0 hsla(255,100%,100%,0.3);
 }
 .btn-primary:hover {
   box-shadow: 0 4px 20px var(--c-accent-glow), inset 0 1px 0 hsla(255,100%,100%,0.2);
