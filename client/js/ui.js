@@ -246,10 +246,16 @@ class UI {
     // Collapse existing cards into a single line summary
     const existingCards = feed.querySelectorAll('.event-card, .quiet-card');
     existingCards.forEach(c => {
-      const title = c.querySelector('.event-title')?.textContent || '平靜的一個月';
+      let title = c.querySelector('.event-title')?.textContent || '平靜的一個月';
+      let desc = c.querySelector('.event-desc')?.textContent || '';
       const meta = c.querySelector('.event-meta')?.textContent || '';
       const selectedChoice = c.querySelector('.event-choices strong')?.textContent || '';
       const hasButtons = c.querySelectorAll('.choice-btn').length > 0;
+      
+      // If the title is an English ID from Life-TW (e.g. CHAIN_YAKUZA), use the description instead
+      if (/^[A-Za-z_0-9]+$/.test(title) && desc) {
+        title = desc;
+      }
       
       c.className = 'collapsed-log';
       if (selectedChoice) {
@@ -305,11 +311,17 @@ class UI {
       </button>
     `).join('');
 
+    let displayTitle = event.title;
+    // If the title is just an English ID (Life-TW auto-generated), show "人生軌跡" instead
+    if (/^[A-Za-z_0-9]+$/.test(displayTitle)) {
+      displayTitle = "人生軌跡";
+    }
+
     card.innerHTML = `
       <div class="event-header">
         <div class="event-icon ${iconClass}">${event.icon || '📰'}</div>
         <div>
-          <div class="event-title">${event.title}</div>
+          <div class="event-title">${displayTitle}</div>
           <div class="event-meta">${window.gameEngine.state.year} 年 ${window.gameEngine.state.month} 月</div>
         </div>
       </div>
