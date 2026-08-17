@@ -1,0 +1,37 @@
+# Node modules
+node_modules/
+admin/node_modules/
+admin/dist/
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+
+# Environment files (DO NOT commit real Firebase keys)
+# .env files should NOT be committed
+*.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Cache
+.cache/

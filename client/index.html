@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvestSim — 台灣投資人生模擬器</title>
+  <meta name="description" content="模擬你的台灣投資人生：台股、美股、加密貨幣、房地產。Google 登入、雲端紀錄、動態市場事件，看看你能不能達到財務自由！" />
+  <meta name="keywords" content="投資模擬器, 台灣, 台股, 美股, 財務自由, 模擬遊戲" />
+  <meta property="og:title" content="InvestSim — 台灣投資人生模擬器" />
+  <meta property="og:description" content="模擬你的台灣投資人生，看看你的財務決策能否帶你走向財務自由。" />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SPLASH SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <section id="screen-splash" class="screen active">
+    <div class="splash-logo">📈</div>
+
+    <div>
+      <h1 class="display-lg gradient-text" style="text-align:center;">InvestSim</h1>
+      <p class="body-lg color-mute" style="text-align:center; margin-top: 8px;">台灣投資人生模擬器</p>
+    </div>
+
+    <div style="width:100%; max-width: 360px; display:flex; flex-direction:column; gap: 12px;">
+
+      <!-- Google Login -->
+      <button id="btn-google-login" class="btn btn-ghost btn-lg" style="gap:12px;">
+        <svg width="20" height="20" viewBox="0 0 48 48" fill="none">
+          <path d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 2.9l5.7-5.7C34.5 7.1 29.5 5 24 5 13 5 4 14 4 25s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z" fill="#FFC107"/>
+          <path d="M6.3 15.3l6.6 4.8C14.5 17 19 14 24 14c3.1 0 5.8 1.1 7.9 2.9l5.7-5.7C34.5 8.1 29.5 6 24 6 16.3 6 9.7 9.8 6.3 15.3z" fill="#FF3D00"/>
+          <path d="M24 44c5.2 0 9.9-1.9 13.5-5.1L31.6 34c-2 1.5-4.6 2.4-7.6 2.4-5.2 0-9.6-3.3-11.2-8H6.4C9.8 36 16.3 44 24 44z" fill="#4CAF50"/>
+          <path d="M43.6 20.1H42V20H24v8h11.3c-1.5 4.1-5.3 7-10.3 7-.1 0-.2 0-.3 0l6.7 5c-.4.3 4.7-3.5 8-9.4.7-1.8 1-3.7 1-5.6 0-1.3-.1-2.6-.4-3.9z" fill="#1976D2"/>
+        </svg>
+        使用 Google 帳號登入
+      </button>
+
+      <!-- User info (when logged in) -->
+      <div id="splash-user-info" class="glass" style="display:none; align-items:center; gap:12px; padding:12px 16px; border-radius:14px;">
+        <img id="splash-user-avatar" src="" alt="avatar" width="36" height="36" style="border-radius:50%; border:2px solid var(--c-border-hi);" />
+        <div>
+          <div class="body" id="splash-user-name" style="font-weight:600;"></div>
+          <div class="caption">已登入，成績將被記錄</div>
+        </div>
+        <button id="btn-sign-out" class="btn btn-sm btn-ghost" style="margin-left:auto;">登出</button>
+      </div>
+
+      <!-- Start Game -->
+      <button id="btn-start-game" class="btn btn-primary btn-lg" style="width:100%;">
+        以訪客開始
+      </button>
+
+      <!-- Guest note -->
+      <p class="caption" style="text-align:center; color: var(--c-text-3);">
+        訪客模式不記錄成績。登入後可查看歷史數據。
+      </p>
+    </div>
+
+    <!-- Credits -->
+    <div style="position:fixed; bottom: 24px; text-align:center;">
+      <p class="caption" style="color: var(--c-text-3);">
+        靈感來自 <a href="https://github.com/kai890707/Life-TW" target="_blank" style="color:var(--c-accent); text-decoration:none;">Life-TW 鬼島人生</a>，
+        致敬 <a href="https://play.google.com/store/apps/details?id=com.candywriter.bitlife" target="_blank" style="color:var(--c-accent); text-decoration:none;">BitLife</a>
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       SETUP SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <section id="screen-setup" class="screen">
+    <div class="setup-container section-gap">
+
+      <div>
+        <h2 class="display-md gradient-text">設定你的投資人生</h2>
+        <p class="body color-mute mt-2">選擇你的風格，決定你的起點。</p>
+      </div>
+
+      <!-- Investment Style -->
+      <div>
+        <div class="action-group-title">投資風格</div>
+        <div class="style-grid" id="style-grid">
+          <div class="style-card selected" data-style="conservative">
+            <div class="style-icon">🧘</div>
+            <div class="style-name">保守穩健型</div>
+            <div class="style-desc">高現金比例，定存、債券為主。安全但成長緩慢。</div>
+          </div>
+          <div class="style-card" data-style="balanced">
+            <div class="style-icon">⚖️</div>
+            <div class="style-name">均衡配置型</div>
+            <div class="style-desc">股票、ETF 為主，兼顧成長與風險控制。新手推薦。</div>
+          </div>
+          <div class="style-card" data-style="aggressive">
+            <div class="style-icon">🚀</div>
+            <div class="style-name">積極成長型</div>
+            <div class="style-desc">大量配置成長股、美股 ETF，承擔較高波動。</div>
+          </div>
+          <div class="style-card" data-style="gambler">
+            <div class="style-icon">🎰</div>
+            <div class="style-name">賭徒梭哈型</div>
+            <div class="style-desc">重倉加密貨幣、融資槓桿。高報酬高風險，極易爆倉。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Initial Capital -->
+      <div>
+        <div class="action-group-title">起始資金（萬元）</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;" id="capital-grid">
+          <button class="btn btn-ghost capital-btn selected" data-val="50">50 萬</button>
+          <button class="btn btn-ghost capital-btn" data-val="100">100 萬</button>
+          <button class="btn btn-ghost capital-btn" data-val="300">300 萬</button>
+          <button class="btn btn-ghost capital-btn" data-val="1000">1000 萬</button>
+        </div>
+      </div>
+
+      <!-- Life Goal -->
+      <div>
+        <div class="action-group-title">你的人生目標</div>
+        <input type="text" id="input-goal" class="input mt-2" placeholder="例如：在 40 歲達到財務自由..." maxlength="50" value="在 40 歲達到財務自由" />
+      </div>
+
+      <button id="btn-start-simulation" class="btn btn-primary btn-lg w-full">
+        🚀 開始模擬！
+      </button>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       LOADING SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <section id="screen-loading" class="screen" style="gap:24px;">
+    <div class="loader"></div>
+    <div>
+      <div class="title" style="text-align:center;">載入市場數據中...</div>
+      <div class="caption" id="loading-status" style="text-align:center; margin-top:8px;">正在從雲端同步最新事件庫</div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN GAME SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <section id="screen-game" class="screen">
+    <div class="game-layout">
+
+      <!-- Header -->
+      <header class="game-header">
+        <div class="header-brand">
+          <div class="header-brand-icon">📈</div>
+          InvestSim
+        </div>
+
+        <div id="market-ticker"></div>
+
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div id="header-user" class="caption color-mute"></div>
+          <button id="btn-pause" class="btn btn-sm btn-ghost">⏸ 暫停</button>
+        </div>
+      </header>
+
+      <!-- Left: Portfolio Panel -->
+      <aside class="panel-portfolio">
+        <div class="portfolio-net-worth">
+          <div class="portfolio-net-worth-label">💰 總資產淨值</div>
+          <div class="portfolio-net-worth-value color-up" id="portfolio-networth">—</div>
+          <div style="margin-top:8px;">
+            <span class="stat-badge stat-up" id="portfolio-return">+0%</span>
+          </div>
+        </div>
+
+        <!-- Net worth chart -->
+        <div class="chart-container" style="height:80px; background:var(--c-surface); border-radius:var(--r-md); border:1px solid var(--c-border); overflow:hidden;">
+          <canvas id="networth-chart" style="width:100%; height:80px;"></canvas>
+        </div>
+
+        <!-- Asset List -->
+        <div id="asset-list" class="flex-col gap-2"></div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-cell">
+            <div class="stat-cell-value" id="stat-annual">—</div>
+            <div class="stat-cell-label">年化報酬</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-value" id="stat-mdd" style="color:var(--c-down)">—</div>
+            <div class="stat-cell-label">最大回撤</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-value" id="stat-months">—</div>
+            <div class="stat-cell-label">遊玩月數</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-value color-accent" id="stat-achievements">0</div>
+            <div class="stat-cell-label">成就數</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Event Feed -->
+      <main class="panel-events">
+        <!-- Time Bar -->
+        <div class="game-time-bar" id="game-timebar">
+          <div>
+            <div class="time-label">當前時間</div>
+            <div class="time-display" id="game-time">第 1 年 1 月</div>
+          </div>
+          <div class="time-divider"></div>
+          <div style="flex:1;">
+            <div class="time-label">年度進度</div>
+            <div class="progress-track" style="width:100%;">
+              <div class="progress-fill" id="year-progress" style="width:8%;"></div>
+            </div>
+          </div>
+          <div class="time-divider"></div>
+          <div style="flex:1;">
+            <div class="time-label">人生進度 (35年)</div>
+            <div class="progress-track">
+              <div class="progress-fill" id="life-progress" style="width:0%; background: linear-gradient(90deg, hsl(340,80%,55%), hsl(30,90%,55%));"></div>
+            </div>
+          </div>
+          <button id="btn-next-month" class="btn btn-primary btn-sm" style="flex-shrink:0;">
+            下一個月 ▶
+          </button>
+        </div>
+
+        <!-- Event Feed -->
+        <div id="event-feed"></div>
+      </main>
+
+      <!-- Right: Actions Panel -->
+      <aside class="panel-actions">
+        <div>
+          <div class="action-group-title">主動操作</div>
+          <div class="flex-col gap-2">
+            <button class="action-btn" id="action-buy-tw">
+              <span class="action-btn-icon">🇹🇼</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">買入台股</div>
+                <div class="action-btn-sublabel">0050, 台積電...</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-buy-us">
+              <span class="action-btn-icon">🇺🇸</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">買入美股</div>
+                <div class="action-btn-sublabel">VOO, NVDA...</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-buy-crypto">
+              <span class="action-btn-icon">₿</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">買入加密貨幣</div>
+                <div class="action-btn-sublabel">BTC, ETH...</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-buy-re">
+              <span class="action-btn-icon">🏠</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">投資房產</div>
+                <div class="action-btn-sublabel">北市、桃園...</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-buy-gold">
+              <span class="action-btn-icon">🥇</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">買入黃金</div>
+                <div class="action-btn-sublabel">避險資產</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <div class="action-group-title">賣出持倉</div>
+          <div class="flex-col gap-2">
+            <button class="action-btn" id="action-sell-tw">
+              <span class="action-btn-icon">📉</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">賣出台股</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-sell-us">
+              <span class="action-btn-icon">📉</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">賣出美股</div>
+              </div>
+            </button>
+            <button class="action-btn" id="action-sell-crypto">
+              <span class="action-btn-icon">📉</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">賣出加密</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <div class="action-group-title">遊戲選項</div>
+          <div class="flex-col gap-2">
+            <button class="action-btn" id="action-retire">
+              <span class="action-btn-icon">🏖️</span>
+              <div class="action-btn-info">
+                <div class="action-btn-label">提早退休</div>
+                <div class="action-btn-sublabel">結算當前成績</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       END SCREEN
+  ══════════════════════════════════════════════════════════ -->
+  <section id="screen-end" class="screen">
+    <div class="end-result-card glass" style="width:100%; max-width:600px;">
+      <div style="text-align:center; margin-bottom: 24px;">
+        <div style="font-size:4rem; margin-bottom:12px;" id="end-emoji">🏆</div>
+        <h2 class="display-md gradient-text" id="end-title">遊戲結束</h2>
+        <p class="body color-mute mt-2" id="end-reason"></p>
+      </div>
+
+      <!-- Final Stats -->
+      <div class="stats-row" style="grid-template-columns: repeat(4,1fr); gap:8px; margin-bottom:24px;">
+        <div class="stat-cell">
+          <div class="stat-cell-value" id="end-networth">—</div>
+          <div class="stat-cell-label">最終淨值</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-value" id="end-return">—</div>
+          <div class="stat-cell-label">總報酬率</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-value" id="end-mdd" style="color:var(--c-down)">—</div>
+          <div class="stat-cell-label">最大回撤</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-value" id="end-months">—</div>
+          <div class="stat-cell-label">共歷時(月)</div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div id="achievements-section">
+        <div class="action-group-title" style="margin-bottom:12px;">解鎖成就</div>
+        <div class="achievements-grid" id="achievements-grid">
+          <div class="caption color-mute">本局未解鎖任何成就</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <button id="btn-play-again" class="btn btn-primary btn-lg">🔄 再來一局</button>
+      <button id="btn-back-splash" class="btn btn-ghost btn-lg">🏠 回主選單</button>
+    </div>
+
+    <p class="caption color-mute" style="text-align:center;">
+      成績已同步至雲端。登入後可在排行榜查看你的歷史記錄。
+    </p>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       TRADE MODAL
+  ══════════════════════════════════════════════════════════ -->
+  <div id="trade-modal" class="modal-overlay">
+    <div class="modal glass">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 class="title" id="trade-modal-title">買入</h3>
+        <button class="btn btn-sm btn-ghost" onclick="window.ui.closeModal('trade-modal')">✕</button>
+      </div>
+
+      <div class="flex-col gap-4">
+        <div class="flex justify-between items-center">
+          <span class="caption">資產</span>
+          <span class="body" style="font-weight:600;" id="trade-asset-name">—</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="caption">當前價格</span>
+          <span class="body" id="trade-price">—</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="caption">可用額度</span>
+          <span class="body color-up" id="trade-balance">—</span>
+        </div>
+        <div>
+          <label class="caption" style="display:block; margin-bottom:6px;">金額（萬元）</label>
+          <input type="number" id="trade-amount" class="input" placeholder="輸入金額（萬元）" min="1" />
+        </div>
+        <button id="trade-confirm-btn" class="btn btn-primary w-full">確認</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Close modal on overlay click -->
+  <script>
+    document.getElementById('trade-modal').addEventListener('click', function(e) {
+      if (e.target === this) window.ui.closeModal('trade-modal');
+    });
+  </script>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       TOAST CONTAINER
+  ══════════════════════════════════════════════════════════ -->
+  <div id="toast-container"></div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════════════════════════════ -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/log-tracker.js"></script>
+  <script src="js/db-service.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/game-engine.js"></script>
+  <script src="js/ui.js"></script>
+
+  <!-- Main App Controller -->
+  <script>
+    // ────────────────────────────────────────────────────────
+    // App Controller — wires everything together
+    // ────────────────────────────────────────────────────────
+
+    let selectedStyle   = 'conservative';
+    let selectedCapital = 50;
+    let autoPlayInterval = null;
+
+    async function initApp() {
+      // Init Firebase services
+      await window.authService.init();
+
+      // Auth state observer
+      window.authService.onAuthChange((user) => {
+        window.ui.updateSplashAuth(user);
+        const headerUser = document.getElementById('header-user');
+        if (headerUser) {
+          headerUser.textContent = user ? `👤 ${user.displayName}` : '訪客模式';
+        }
+      });
+
+      // ── Splash Screen Events ──────────────────────────────
+      document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+        try {
+          await window.authService.signInWithGoogle();
+          window.ui.showToast('✅ 登入成功！', 'success');
+        } catch (e) {
+          window.ui.showToast('❌ 登入失敗：' + e.message, 'error');
+        }
+      });
+
+      document.getElementById('btn-sign-out')?.addEventListener('click', async () => {
+        await window.authService.signOut();
+        window.ui.showToast('已登出', 'info');
+      });
+
+      document.getElementById('btn-start-game')?.addEventListener('click', () => {
+        window.ui.showScreen('setup');
+      });
+
+      document.getElementById('btn-back-splash')?.addEventListener('click', () => {
+        window.ui.showScreen('splash');
+      });
+
+      // ── Setup Screen Events ───────────────────────────────
+      document.getElementById('style-grid')?.addEventListener('click', (e) => {
+        const card = e.target.closest('.style-card');
+        if (!card) return;
+        document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedStyle = card.dataset.style;
+      });
+
+      document.getElementById('capital-grid')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.capital-btn');
+        if (!btn) return;
+        document.querySelectorAll('.capital-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedCapital = parseInt(btn.dataset.val);
+      });
+
+      document.getElementById('btn-start-simulation')?.addEventListener('click', startGame);
+
+      // ── Game Screen Events ────────────────────────────────
+      document.getElementById('btn-next-month')?.addEventListener('click', advanceMonth);
+
+      // Trade Buttons
+      const tradeMap = {
+        'action-buy-tw':     ['buy', 'twStock',    '台股'],
+        'action-buy-us':     ['buy', 'usStock',    '美股'],
+        'action-buy-crypto': ['buy', 'crypto',     '加密貨幣'],
+        'action-buy-re':     ['buy', 'realEstate', '房產'],
+        'action-buy-gold':   ['buy', 'gold',       '黃金'],
+        'action-sell-tw':    ['sell','twStock',    '台股'],
+        'action-sell-us':    ['sell','usStock',    '美股'],
+        'action-sell-crypto':['sell','crypto',     '加密貨幣']
+      };
+
+      for (const [id, [action, asset, name]] of Object.entries(tradeMap)) {
+        document.getElementById(id)?.addEventListener('click', () => {
+          window.ui.showTradeModal(action, asset, name);
+        });
+      }
+
+      document.getElementById('action-retire')?.addEventListener('click', () => {
+        if (confirm('確定要提早退休嗎？這將結束本局遊戲。')) {
+          window.gameEngine.state.endReason  = '提早退休';
+          window.gameEngine.state.endMessage = '你決定在這個時間點鳴金收兵，享受你的財富。';
+          window.gameEngine.state.isEnded    = true;
+          window.ui.renderEndScreen();
+        }
+      });
+
+      // End Screen Events
+      document.getElementById('btn-play-again')?.addEventListener('click', () => {
+        window.ui.showScreen('setup');
+      });
+    }
+
+    async function startGame() {
+      window.ui.showScreen('loading');
+
+      // Init DB service
+      await window.dbService.init(window.authService.app);
+
+      const goal = document.getElementById('input-goal')?.value || '財務自由';
+
+      try {
+        document.getElementById('loading-status').textContent = '正在從雲端同步最新事件庫...';
+        await window.gameEngine.newGame({
+          style:       selectedStyle,
+          initialCash: selectedCapital,
+          goal
+        });
+
+        // Update user profile if logged in
+        if (window.authService.user) {
+          await window.dbService.updateUserProfile(window.authService.user, {
+            gamesPlayed: true
+          });
+        }
+
+        // Reset UI chart data
+        window.ui.chartData = [];
+
+        document.getElementById('loading-status').textContent = '初始化市場引擎...';
+        await sleep(800);
+
+        window.ui.showScreen('game');
+        window.ui.renderGame();
+
+        // Render initial "game start" event
+        window.ui.renderEvent(null, {});
+
+        window.ui.showToast('🎮 遊戲開始！點擊「下一個月」推進時間。', 'info', 4000);
+
+      } catch (err) {
+        console.error(err);
+        window.ui.showToast('❌ 載入失敗，請重試。' + err.message, 'error');
+        window.ui.showScreen('splash');
+      }
+    }
+
+    function advanceMonth() {
+      if (window.gameEngine.state.isEnded) {
+        window.ui.renderEndScreen();
+        return;
+      }
+
+      const { event, priceChanges } = window.gameEngine.tick();
+
+      window.ui.renderGame();
+      window.ui.renderEvent(event, priceChanges);
+      window.ui.updateChart(window.gameEngine.getNetWorth());
+
+      if (window.gameEngine.state.isEnded) {
+        setTimeout(() => window.ui.renderEndScreen(), 1500);
+      }
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── Boot ──────────────────────────────────────────────
+    initApp().catch(console.error);
+  </script>
+</div>
+</body>
+</html>

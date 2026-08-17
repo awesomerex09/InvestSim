@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// ============================================================
+// InvestSim — Firestore Security Rules
+// Author: VillainPrime
+// Replace YOUR_ADMIN_UID with your actual Firebase User UID
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if the requester is the admin
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.uid == "YOUR_ADMIN_UID";
+    }
+
+    // Helper: check if the user is authenticated
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    // ─── config collection ───────────────────────────────────
+    // Anyone (including guests) can READ game configs (events, achievements).
+    // Only admin can WRITE.
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── game_sessions collection ────────────────────────────
+    // Logged-in users can CREATE their own session docs.
+    // Users can READ their own session docs.
+    // Only admin can READ all sessions and DELETE.
+    match /game_sessions/{sessionId} {
+      allow create: if isLoggedIn() &&
+                       request.resource.data.uid == request.auth.uid;
+      allow read:   if isAdmin() ||
+                       (isLoggedIn() && resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // ─── users collection ────────────────────────────────────
+    // Users can read/write only their own profile document.
+    // Admin can read all user documents.
+    match /users/{userId} {
+      allow read, write: if isLoggedIn() && request.auth.uid == userId;
+      allow read:        if isAdmin();
+    }
+  }
+}
