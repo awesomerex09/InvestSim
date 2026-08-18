@@ -49,10 +49,28 @@
 ### 📁 資料夾結構
 ```text
 InvestSim/
-├── client/           ← 玩家端遊戲 (主程式)
-├── admin/            ← 管理後台 (需 npm install && npm run dev)
-├── firebase/         ← Firebase 規則設定
-└── update_github.bat ← 一鍵更新到 GitHub (Windows)
+├── client/                    ← 玩家端遊戲（純靜態，部署到 GitHub Pages）
+│   ├── index.html             ← 主遊戲頁面（含 App Controller）
+│   ├── css/style.css          ← Apple Design 視覺系統
+│   └── js/
+│       ├── firebase-config.js ← Firebase 設定
+│       ├── db-service.js      ← Firestore 讀寫（事件/成就/玩家數據）
+│       ├── auth.js            ← Google 登入
+│       ├── game-engine.js     ← 市場模擬引擎、事件觸發、成就判斷
+│       └── ui.js              ← 畫面控制、事件卡片渲染
+├── admin/                     ← 管理後台（React + Vite，本機運行）
+│   └── src/
+│       ├── pages/
+│       │   ├── EventManager.jsx       ← 事件 CRUD + 匯入/匯出 + 篩選
+│       │   ├── AchievementManager.jsx ← 成就管理
+│       │   └── Dashboard.jsx          ← 數據儀表板
+│       ├── components/
+│       │   └── EventSkillTree.jsx     ← 樹狀圖視覺化
+│       └── data/
+│           ├── seedInvestSim.js       ← InvestSim 預設事件（投資類）
+│           └── seedLifeTwFull.js      ← Life-TW 全量事件（人生類，500+ 筆）
+├── firebase/                  ← Firestore 規則設定
+└── update_github.bat          ← 一鍵更新到 GitHub（Windows）
 ```
 
 ---
@@ -73,7 +91,38 @@ cd admin
 npm install
 npm run dev
 ```
-啟動後開啟 `http://localhost:5174`。
+啟動後開啟 `http://localhost:3006`（如有衝突會自動換 port）。
+
+---
+
+## 📝 事件 JSON 格式說明（便於改版複用）
+
+所有事件均以 JSON 格式儲存於 Firestore `config/events`，可透過後台「📤 匯出 JSON」取得完整範本：
+
+```json
+{
+  "id": "e_unique_id",
+  "title": "事件名稱",
+  "description": "事件描述文字",
+  "type": "macro | life | childhood | crypto | realEstate | tech | blackswan | routine",
+  "icon": "📈",
+  "sentiment": "positive | negative | neutral | critical",
+  "enabled": true,
+  "triggerType": "fixed_age | age_range | random",
+  "triggerAge": 25,
+  "minAge": 20,
+  "maxAge": 40,
+  "probability": 0.1,
+  "prerequisites": ["e_other_event_id"],
+  "statReq": { "stat": "intelligence", "min": 60 },
+  "effectStr": "s.lifeStats.happiness -= 5; return {twStock: 10};",
+  "choices": [
+    { "text": "選項文字", "risk": "low | medium | high | extreme", "effectStr": "return {twStock: 5};" }
+  ]
+}
+```
+
+> 💡 `effectStr` 可直接操作狀態物件 `s`（含 `s.lifeStats`、`s.portfolio`、`s.prices`），並 `return` 市場波動物件。
 
 ---
 

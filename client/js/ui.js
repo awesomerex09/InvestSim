@@ -338,12 +338,33 @@ class UI {
         window.gameEngine.applyEventChoice(event, choiceIdx);
         const choice = event.choices[choiceIdx];
         const choicesContainer = card.querySelector('.event-choices');
+
+        // Build effect summary from choice data
+        const eff = choice.effect || {};
+        const effectBadges = [];
+        const statLabels = { appearance:'顏值', intelligence:'智力', constitution:'體質', happiness:'快樂' };
+        const mktLabels  = { twStock:'台股', usStock:'美股', crypto:'加密', realEstate:'房產', gold:'黃金', cash:'現金' };
+        Object.entries(statLabels).forEach(([k, label]) => {
+          if (eff[k]) effectBadges.push({ label, val: eff[k], isStat: true });
+        });
+        Object.entries(mktLabels).forEach(([k, label]) => {
+          if (eff[k]) effectBadges.push({ label, val: eff[k], isStat: false });
+        });
+
+        const badgesHTML = effectBadges.map(b => {
+          const positive = b.val > 0;
+          const display  = positive ? `+${b.isStat ? b.val : (b.val*100).toFixed(0)+'%'}` : `${b.isStat ? b.val : (b.val*100).toFixed(0)+'%'}`;
+          const color = positive ? 'var(--c-up)' : 'var(--c-down)';
+          const bg    = positive ? 'hsla(142,70%,45%,0.12)' : 'hsla(355,75%,55%,0.12)';
+          return `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:0.72rem;font-weight:700;background:${bg};color:${color};">${b.label} ${display}</span>`;
+        }).join('');
+
         choicesContainer.innerHTML = `
-          <div class="caption mt-2" style="border-left: 2px solid var(--c-accent); padding-left: 8px; color: var(--c-text-2);">
-            你選擇了：<strong style="color: var(--c-text);">${choice.text}</strong>
+          <div style="border-left: 2px solid var(--c-accent); padding-left: 8px;">
+            <div class="caption" style="color: var(--c-text-2); margin-bottom:5px;">你選擇了：<strong style="color: var(--c-text);">${choice.text}</strong></div>
+            ${effectBadges.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${badgesHTML}</div>` : ''}
           </div>
         `;
-        // Re-render portfolio
         this.renderPortfolio();
         this.renderStats();
       });
