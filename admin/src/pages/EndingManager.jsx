@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 
-const EMPTY_ACHIEVEMENT = {
+const EMPTY_ENDING = {
   id:          '',
   title:       '',
   description: '',
@@ -105,8 +105,8 @@ function ConditionEditor({ label, conds, onChange, advancedMode, onToggleAdvance
 }
 
 
-// ─── Achievement Card (for tree view) ─────────────────────────────────────────
-function AchievementCard({ a, onToggle, onEdit, onDelete }) {
+// ─── Ending Card (for tree view) ─────────────────────────────────────────
+function EndingCard({ a, onToggle, onEdit, onDelete }) {
   const isEnabled = a.enabled !== false;
   return (
     <div style={{
@@ -184,13 +184,13 @@ function AchievementCard({ a, onToggle, onEdit, onDelete }) {
   );
 }
 
-// ─── Achievement Tree View ────────────────────────────────────────────────────
-function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
+// ─── Ending Tree View ────────────────────────────────────────────────────
+function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
   const [searchQ, setSearchQ] = useState("");
   const [filterType, setFilterType] = useState("all");
 
   const visible = useMemo(() => {
-    let r = achievements;
+    let r = endings;
     if (searchQ) {
       const q = searchQ.toLowerCase();
       r = r.filter(a => a.title?.toLowerCase().includes(q) || a.id?.toLowerCase().includes(q));
@@ -198,7 +198,7 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
     if (filterType === "enabled")  r = r.filter(a => a.enabled !== false);
     if (filterType === "disabled") r = r.filter(a => a.enabled === false);
     return r;
-  }, [achievements, searchQ, filterType]);
+  }, [endings, searchQ, filterType]);
 
   // Group by first letter of title (A-Z, others)
   const groups = useMemo(() => {
@@ -224,7 +224,7 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input
           value={searchQ} onChange={e => setSearchQ(e.target.value)}
-          placeholder="🔍 搜尋成就..."
+          placeholder="🔍 搜尋結局..."
           style={{
             background: "#0f172a", border: "1px solid #334155", borderRadius: 7,
             color: "#cbd5e1", padding: "5px 12px", fontSize: 12, width: 200,
@@ -238,7 +238,7 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
             borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer",
           }}>{l}</button>
         ))}
-        <span style={{ color: "#475569", fontSize: 11 }}>{visible.length} / {achievements.length} 個</span>
+        <span style={{ color: "#475569", fontSize: 11 }}>{visible.length} / {endings.length} 個</span>
       </div>
 
       {/* Groups */}
@@ -256,7 +256,7 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
           {/* Cards grid */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {items.map(a => (
-              <AchievementCard
+              <EndingCard
                 key={a.id} a={a}
                 onToggle={onToggle} onEdit={onEdit} onDelete={onDelete}
               />
@@ -267,7 +267,7 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
 
       {visible.length === 0 && (
         <p style={{ color: "#475569", textAlign: "center", marginTop: 40 }}>
-          沒有符合條件的成就
+          沒有符合條件的結局
         </p>
       )}
     </div>
@@ -275,37 +275,37 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function AchievementManager({ showToast }) {
-  const [achievements, setAchievements] = useState([]);
+export default function EndingManager({ showToast }) {
+  const [endings, setEndings] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editAchv, setEditAchv] = useState(null);
-  const [form,     setForm]     = useState(EMPTY_ACHIEVEMENT);
+  const [editEnding, setEditEnding] = useState(null);
+  const [form,     setForm]     = useState(EMPTY_ENDING);
   const [saving,   setSaving]   = useState(false);
   const [activeTab, setActiveTab] = useState('list');
 
-  useEffect(() => { loadAchievements(); }, []);
+  useEffect(() => { loadEndings(); }, []);
 
-  async function loadAchievements() {
+  async function loadEndings() {
     setLoading(true);
     try {
-      const snap = await getDoc(doc(db, 'config', 'achievements'));
-      setAchievements(snap.exists() ? (snap.data().list || []) : []);
+      const snap = await getDoc(doc(db, 'config', 'endings'));
+      setEndings(snap.exists() ? (snap.data().list || []) : []);
     } catch (e) {
-      showToast('載入成就失敗: ' + e.message, 'error');
+      showToast('載入結局失敗: ' + e.message, 'error');
     } finally {
       setLoading(false);
     }
   }
 
   function openNew() {
-    setEditAchv(null);
-    setForm({ ...EMPTY_ACHIEVEMENT, id: `a_${Date.now()}` });
+    setEditEnding(null);
+    setForm({ ...EMPTY_ENDING, id: `a_${Date.now()}` });
     setShowForm(true);
   }
 
   function openEdit(a) {
-    setEditAchv(a);
+    setEditEnding(a);
     const hasComplexJS = a.conditionStr && a.conditionStr.length > 0 && (!a.guiConds || a.guiConds.length === 0);
     setForm(JSON.parse(JSON.stringify({ 
       enabled: true, 
@@ -318,24 +318,24 @@ export default function AchievementManager({ showToast }) {
 
   async function toggleEnabled(a) {
     try {
-      const configRef = doc(db, 'config', 'achievements');
+      const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
       list = list.map(item => item.id === a.id ? { ...item, enabled: !item.enabled } : item);
       await setDoc(configRef, { list }, { merge: true });
-      setAchievements(list);
-      showToast(a.enabled ? '已關閉成就' : '已啟用成就', 'success');
+      setEndings(list);
+      showToast(a.enabled ? '已關閉結局' : '已啟用結局', 'success');
     } catch (e) {
       showToast('切換狀態失敗: ' + e.message, 'error');
     }
   }
 
-  async function saveAchievement() {
-    if (!form.title) { showToast('成就名稱不能為空', 'error'); return; }
+  async function saveEnding() {
+    if (!form.title) { showToast('結局名稱不能為空', 'error'); return; }
     if (!form.conditionStr) { showToast('解鎖條件不能為空', 'error'); return; }
     setSaving(true);
     try {
-      const configRef = doc(db, 'config', 'achievements');
+      const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
 
@@ -344,15 +344,15 @@ export default function AchievementManager({ showToast }) {
         conditionStr: form.advancedMode ? form.conditionStr : guiToConditionStr(form.guiConds)
       };
 
-      if (editAchv) {
+      if (editEnding) {
         list = list.map(a => a.id === form.id ? achvToSave : a);
       } else {
         list = [...list, achvToSave];
       }
 
       await setDoc(configRef, { list }, { merge: true });
-      setAchievements(list);
-      showToast(editAchv ? '✅ 成就已更新！' : '✅ 新成就已發布！', 'success');
+      setEndings(list);
+      showToast(editEnding ? '✅ 結局已更新！' : '✅ 新結局已發布！', 'success');
       setShowForm(false);
     } catch (e) {
       showToast('儲存失敗: ' + e.message, 'error');
@@ -361,15 +361,15 @@ export default function AchievementManager({ showToast }) {
     }
   }
 
-  async function deleteAchievement(a) {
+  async function deleteEnding(a) {
     if (!confirm(`確定要刪除「${a.title}」嗎？`)) return;
     try {
-      const configRef = doc(db, 'config', 'achievements');
+      const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
       const list = (snap.data().list || []).filter(item => item.id !== a.id);
       await setDoc(configRef, { list });
-      setAchievements(list);
-      showToast('🗑️ 成就已刪除', 'info');
+      setEndings(list);
+      showToast('🗑️ 結局已刪除', 'info');
     } catch (e) {
       showToast('刪除失敗: ' + e.message, 'error');
     }
@@ -383,10 +383,10 @@ export default function AchievementManager({ showToast }) {
     <div className="flex-col gap-6">
       <div className="page-header">
         <div>
-          <h1 className="page-title gradient-text">成就管理</h1>
-          <p className="page-subtitle">共 {achievements.length} 個成就・自訂玩家的成就與解鎖條件</p>
+          <h1 className="page-title gradient-text">結局管理</h1>
+          <p className="page-subtitle">共 {endings.length} 個結局・自訂玩家的結局與解鎖條件</p>
         </div>
-        <button className="btn btn-primary" onClick={openNew}>＋ 新增成就</button>
+        <button className="btn btn-primary" onClick={openNew}>＋ 新增結局</button>
       </div>
 
       {/* Tab switcher */}
@@ -398,20 +398,20 @@ export default function AchievementManager({ showToast }) {
       {loading ? (
         <div className="card flex items-center gap-3"><div className="loader" /><span className="color-mute">載入中...</span></div>
       ) : activeTab === 'tree' ? (
-        achievements.length === 0 ? (
-          <div className="card"><p className="color-mute">尚無成就，請先新增。</p></div>
+        endings.length === 0 ? (
+          <div className="card"><p className="color-mute">尚無結局，請先新增。</p></div>
         ) : (
-          <AchievementTreeView
-            achievements={achievements}
+          <EndingTreeView
+            endings={endings}
             onToggle={toggleEnabled}
             onEdit={openEdit}
-            onDelete={deleteAchievement}
+            onDelete={deleteEnding}
           />
         )
       ) : (
         <div className="card">
-          {achievements.length === 0 ? (
-            <p className="color-mute">尚無成就。點擊「新增成就」建立第一個成就。</p>
+          {endings.length === 0 ? (
+            <p className="color-mute">尚無結局。點擊「新增結局」建立第一個結局。</p>
           ) : (
             <div className="table-container">
               <table>
@@ -419,7 +419,7 @@ export default function AchievementManager({ showToast }) {
                   <tr>
                     <th>狀態</th>
                     <th>圖示</th>
-                    <th>成就 ID</th>
+                    <th>結局 ID</th>
                     <th>名稱</th>
                     <th>描述</th>
                     <th>解鎖條件表示式</th>
@@ -427,7 +427,7 @@ export default function AchievementManager({ showToast }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {achievements.map(a => {
+                  {endings.map(a => {
                     const isEnabled = a.enabled !== false;
                     return (
                       <tr key={a.id} style={{ opacity: isEnabled ? 1 : 0.5 }}>
@@ -445,7 +445,7 @@ export default function AchievementManager({ showToast }) {
                         <td>
                           <div className="flex gap-2">
                             <button className="btn btn-ghost btn-sm" onClick={() => openEdit(a)}>✏️</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => deleteAchievement(a)}>🗑️</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => deleteEnding(a)}>🗑️</button>
                           </div>
                         </td>
                       </tr>
@@ -463,7 +463,7 @@ export default function AchievementManager({ showToast }) {
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
           <div className="modal" style={{ maxWidth: 600 }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editAchv ? '編輯成就' : '新增成就'}</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editEnding ? '編輯結局' : '新增結局'}</h2>
               <button className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>✕</button>
             </div>
 
@@ -478,19 +478,19 @@ export default function AchievementManager({ showToast }) {
                   <input value={form.icon} onChange={e => updateForm('icon', e.target.value)} placeholder="🏆" />
                 </div>
                 <div className="form-group">
-                  <label>成就 ID</label>
+                  <label>結局 ID</label>
                   <input value={form.id} onChange={e => updateForm('id', e.target.value)} placeholder="a_001" className="font-mono" />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>成就名稱</label>
+                <label>結局名稱</label>
                 <input value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="例：百萬富翁" />
               </div>
 
               <div className="form-group">
-                <label>成就描述</label>
-                <textarea value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="描述這個成就的意義..." />
+                <label>結局描述</label>
+                <textarea value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="描述這個結局的意義..." />
               </div>
 
               <ConditionEditor
@@ -505,8 +505,8 @@ export default function AchievementManager({ showToast }) {
 
               <div className="flex justify-end gap-3" style={{ marginTop: 10 }}>
                 <button className="btn btn-ghost" onClick={() => setShowForm(false)}>取消</button>
-                <button className="btn btn-primary" onClick={saveAchievement} disabled={saving}>
-                  {saving ? '儲存中...' : '儲存成就'}
+                <button className="btn btn-primary" onClick={saveEnding} disabled={saving}>
+                  {saving ? '儲存中...' : '儲存結局'}
                 </button>
               </div>
             </div>

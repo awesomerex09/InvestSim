@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
 import { INVESTSIM_EVENTS } from '../data/seedInvestSim.js';
@@ -70,7 +70,7 @@ const EMPTY_EVENT = {
   triggerType:'age_range', triggerAge:18, minAge:18, maxAge:80,
   prerequisites:[], statReq:{ stat:'none', min:0 },
   effectStr:'', guiVals: emptyGuiVals(), advancedMode: false,
-  choices:[{...EMPTY_CHOICE},{...EMPTY_CHOICE},{...EMPTY_CHOICE},{...EMPTY_CHOICE}],
+  choices:[{...EMPTY_CHOICE}],
   probability:0.1
 };
 
@@ -288,6 +288,12 @@ export default function EventManager({ showToast }) {
   function updateForm(field, value) { setForm(f => ({ ...f, [field]: value })); }
   function updateChoice(i, field, value) {
     setForm(f => { const c = [...f.choices]; c[i] = { ...c[i], [field]: value }; return { ...f, choices: c }; });
+  }
+  function addChoice() {
+    setForm(f => ({ ...f, choices: [...f.choices, { ...EMPTY_CHOICE, id: Date.now() }] }));
+  }
+  function removeChoice(i) {
+    setForm(f => { const c = [...f.choices]; c.splice(i, 1); return { ...f, choices: c }; });
   }
 
   const sentimentBadge = s => ({ positive:'badge-green', negative:'badge-red', neutral:'badge-gray', critical:'badge-yellow' }[s] || 'badge-gray');
@@ -531,8 +537,13 @@ export default function EventManager({ showToast }) {
               <div>
                 <label style={{ display:'block', marginBottom:10, fontWeight:600 }}>🎮 玩家選項</label>
                 {form.choices.map((choice, i) => (
-                  <div key={i} style={{ marginBottom:10, padding:'12px 14px', background:'hsla(0,0%,0%,0.15)', borderRadius:10, borderLeft:'3px solid var(--color-accent)' }}>
-                    <div style={{ fontWeight:700, marginBottom:8, fontSize:'0.8125rem', opacity:0.7 }}>選項 {i+1}</div>
+                  <div key={i} style={{ marginBottom:10, padding:'12px 14px', background:'hsla(0,0%,0%,0.15)', borderRadius:10, borderLeft:'3px solid var(--color-accent)', position: 'relative' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+                      <div style={{ fontWeight:700, fontSize:'0.8125rem', opacity:0.7 }}>選項 {i+1}</div>
+                      {form.choices.length > 1 && (
+                        <button className="btn btn-ghost btn-sm" style={{ padding:'0 6px', height:24, color:'var(--color-red)' }} onClick={() => removeChoice(i)}>✕ 刪除選項</button>
+                      )}
+                    </div>
                     <div className="form-group" style={{ marginBottom:8 }}>
                       <input value={choice.text} onChange={e => updateChoice(i,'text',e.target.value)} placeholder={`選項 ${i+1} 顯示文字...`} />
                     </div>
@@ -553,6 +564,7 @@ export default function EventManager({ showToast }) {
                     />
                   </div>
                 ))}
+                <button className="btn btn-ghost" style={{ width: '100%', border: '1px dashed var(--border-color)', marginTop: 8 }} onClick={addChoice}>＋ 新增選項</button>
               </div>
             </div>
 

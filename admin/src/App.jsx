@@ -5,6 +5,7 @@ import { auth, googleProvider, ADMIN_UID } from './firebase/config.js';
 import Dashboard      from './pages/Dashboard.jsx';
 import EventManager   from './pages/EventManager.jsx';
 import AchievementManager from './pages/AchievementManager.jsx';
+import EndingManager      from './pages/EndingManager.jsx';
 import Analytics      from './pages/Analytics.jsx';
 import Login          from './pages/Login.jsx';
 
@@ -67,6 +68,7 @@ export default function App() {
     { to: '/dashboard',     icon: '📊', label: '總覽儀表板' },
     { to: '/events',        icon: '📰', label: '事件管理' },
     { to: '/achievements',  icon: '🏆', label: '成就管理' },
+    { to: '/endings',       icon: '🎬', label: '結局管理' },
     { to: '/analytics',     icon: '📈', label: '玩家數據' }
   ];
 
@@ -112,6 +114,7 @@ export default function App() {
           <Route path="/dashboard"    element={<Dashboard    showToast={showToast} />} />
           <Route path="/events"       element={<EventManager showToast={showToast} />} />
           <Route path="/achievements" element={<AchievementManager showToast={showToast} />} />
+          <Route path="/endings"      element={<EndingManager showToast={showToast} />} />
           <Route path="/analytics"    element={<Analytics    showToast={showToast} />} />
         </Routes>
       </main>

@@ -8,6 +8,7 @@ class GameEngine {
     // ── Config (loaded from Firestore or local defaults) ──
     this.events       = [];
     this.achievements = [];
+    this.endings      = [];
 
     // ── Game State ────────────────────────────────────────
     this.state = null;
@@ -47,6 +48,7 @@ class GameEngine {
     const config = await window.dbService.fetchDynamicConfig();
     this.events       = (config.events || []).filter(e => e.enabled !== false);
     this.achievements = (config.achievements || []).filter(a => a.enabled !== false);
+    this.endings      = (config.endings || []).filter(en => en.enabled !== false);
 
     // Reset log tracker
     window.logTracker.reset();
@@ -413,28 +415,23 @@ class GameEngine {
     const netWorth = this.getNetWorth();
     const s = this.state;
 
-    // Bankruptcy: net worth below 0 (Debt)
-    if (netWorth < 0 && s.age >= 18) {
-      this._endGame('破產', '你背負了龐大債務，無力回天宣告破產。');
-      return;
+    // Check dynamic endings from config
+    for (const ending of this.endings) {
+      if (!ending.conditionStr) continue;
+      try {
+        const isTriggered = new Function('s', 'netWorth', `return (${ending.conditionStr});`)(s, netWorth);
+        if (isTriggered) {
+          this._endGame(ending.title, ending.description);
+          return;
+        }
+      } catch (err) {
+        console.warn(`[Engine] Failed to evaluate ending ${ending.id}`, err);
+      }
     }
 
-    // Total margin call / forced liquidation
-    if (s.portfolio.cash < 0 && s.age >= 18) {
-      this._endGame('負債', '現金耗盡且負債，生活無法繼續。');
-      return;
-    }
-
-    // Natural Death
+    // Natural Death is hardcoded because it relies on complex probability
     if (this._checkDeath()) {
       this._endGame('壽終正寢', `你走完了 ${s.age} 年的漫長人生。`);
-      return;
-    }
-
-    // Super Rich
-    const targetNetWorth = Math.max(100000000, s.startNetWorth * 50);
-    if (netWorth >= targetNetWorth) {
-      this._endGame('爆富退休', '你的資產突破天際，成為傳奇投資人！');
       return;
     }
   }

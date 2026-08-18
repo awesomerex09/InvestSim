@@ -143,6 +143,12 @@ class DatabaseService {
       { id: 'a009', icon: '🏆', name: '財務自由', desc: '被動收入超過生活支出', condition: 'passiveIncome >= livingCost', rarity: 'legendary' },
       { id: 'a010', icon: '₿', name: '加密信徒', desc: '加密貨幣佔資產 60% 以上', condition: 'cryptoPct >= 0.6', rarity: 'uncommon' }
     ];
+
+    this._defaultEndings = [
+      { id: 'end01', title: '破產', description: '你背負了龐大債務，無力回天宣告破產。', conditionStr: 'netWorth < 0 && s.age >= 18' },
+      { id: 'end02', title: '負債', description: '現金耗盡且負債，生活無法繼續。', conditionStr: 's.portfolio.cash < 0 && s.age >= 18' },
+      { id: 'end03', title: '爆富退休', description: '你的資產突破天際，成為傳奇投資人！', conditionStr: 'netWorth >= Math.max(100000000, s.startNetWorth * 50)' }
+    ];
   }
 
   /**
@@ -172,7 +178,8 @@ class DatabaseService {
     if (!this.db) {
       return {
         events:       this._defaultEvents,
-        achievements: this._defaultAchievements
+        achievements: this._defaultAchievements,
+        endings:      this._defaultEndings
       };
     }
 
@@ -180,16 +187,19 @@ class DatabaseService {
       const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const eventsDoc       = await getDoc(doc(this.db, 'config', 'events'));
       const achievementsDoc = await getDoc(doc(this.db, 'config', 'achievements'));
+      const endingsDoc      = await getDoc(doc(this.db, 'config', 'endings'));
 
       return {
         events:       eventsDoc.exists() ? eventsDoc.data().list       : this._defaultEvents,
-        achievements: achievementsDoc.exists() ? achievementsDoc.data().list : this._defaultAchievements
+        achievements: achievementsDoc.exists() ? achievementsDoc.data().list : this._defaultAchievements,
+        endings:      endingsDoc.exists() ? endingsDoc.data().list     : this._defaultEndings
       };
     } catch (err) {
       console.warn('[DB] Failed to fetch config, using local defaults.', err);
       return {
         events:       this._defaultEvents,
-        achievements: this._defaultAchievements
+        achievements: this._defaultAchievements,
+        endings:      this._defaultEndings
       };
     }
   }
