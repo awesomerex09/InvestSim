@@ -419,7 +419,8 @@ class GameEngine {
     for (const ending of this.endings) {
       if (!ending.conditionStr) continue;
       try {
-        const isTriggered = new Function('s', 'netWorth', `return (${ending.conditionStr});`)(s, netWorth);
+        const checkFn = new Function('s', 'nw', 'netWorth', 'total', 'port', `return (${ending.conditionStr});`);
+        const isTriggered = checkFn(s, netWorth, netWorth, netWorth, s.portfolio);
         if (isTriggered) {
           this._endGame(ending.title, ending.description);
           return;
@@ -496,9 +497,9 @@ class GameEngine {
       let conditionMet = false;
       try {
         // Evaluate the dynamic condition string (e.g., 's.age >= 30 && nw > 1000000')
-        // We provide s, nw, total, port in the scope
-        const checkFn = new Function('s', 'nw', 'total', 'port', `return ${achievement.conditionStr};`);
-        conditionMet = checkFn(s, nw, total, port);
+        // We provide s, nw, netWorth, total, port in the scope
+        const checkFn = new Function('s', 'nw', 'netWorth', 'total', 'port', `return (${achievement.conditionStr});`);
+        conditionMet = checkFn(s, nw, nw, total, port);
       } catch (e) {
         console.warn(`Achievement ${achievement.id} condition error:`, e);
       }

@@ -1,30 +1,33 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { DEFAULT_ENDINGS } from '../data/seedEndings.js';
 
 const EMPTY_ENDING = {
   id:          '',
   title:       '',
   description: '',
-  icon:        '🏆',
+  icon:        '🎬',
   conditionStr: '',
-  guiConds:    [],
+  guiConds:    [{ id: 1, logic: '&&', field: 's.portfolio.cash', op: '<', val: 0 }],
   advancedMode: false,
   enabled:     true
 };
 
 // ─── Reusable Condition Editor ─────────────────────────────────────────────
 const FIELD_OPTIONS = [
-  { value: 's.age', label: '年齡' },
-  { value: 's.portfolio.cash', label: '現金' },
-  { value: 's.portfolio.twStock', label: '台股' },
-  { value: 's.portfolio.usStock', label: '美股' },
-  { value: 's.portfolio.crypto', label: '加密貨幣' },
-  { value: 's.portfolio.realEstate', label: '房地產' },
-  { value: 's.lifeStats.appearance', label: '顏值' },
-  { value: 's.lifeStats.intelligence', label: '智力' },
-  { value: 's.lifeStats.constitution', label: '體質' },
-  { value: 's.lifeStats.happiness', label: '快樂' },
+  { value: 'nw', label: '總資產淨值 (nw)' },
+  { value: 's.portfolio.cash', label: '現金 (cash)' },
+  { value: 's.portfolio.twStock', label: '台股市值 (twStock)' },
+  { value: 's.portfolio.usStock', label: '美股市值 (usStock)' },
+  { value: 's.portfolio.crypto', label: '加密貨幣 (crypto)' },
+  { value: 's.portfolio.realEstate', label: '房地產 (realEstate)' },
+  { value: 's.portfolio.gold', label: '黃金市值 (gold)' },
+  { value: 's.age', label: '玩家年齡 (age)' },
+  { value: 's.lifeStats.appearance', label: '顏值 (appearance)' },
+  { value: 's.lifeStats.intelligence', label: '智力 (intelligence)' },
+  { value: 's.lifeStats.constitution', label: '體質 (constitution)' },
+  { value: 's.lifeStats.happiness', label: '快樂 (happiness)' },
 ];
 
 const OP_OPTIONS = [
@@ -36,19 +39,19 @@ const OP_OPTIONS = [
 ];
 
 function guiToConditionStr(conds) {
-  if (!conds || conds.length === 0) return 'true';
+  if (!conds || conds.length === 0) return 'false';
   return conds.map((c, i) => {
     let str = `${c.field} ${c.op} ${c.val}`;
-    if (i > 0) str = ` ${c.logic} ${str}`;
+    if (i > 0) str = ` ${c.logic || '&&'} ${str}`;
     return str;
   }).join('');
 }
 
 function ConditionEditor({ label, conds, onChange, advancedMode, onToggleAdvanced, conditionStr, onConditionStrChange }) {
-  const addCond = () => onChange([...(conds||[]), { id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '>=', val: 0 }]);
-  const removeCond = (idx) => onChange(conds.filter((_, i) => i !== idx));
+  const addCond = () => onChange([...(conds || []), { id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '<', val: 0 }]);
+  const removeCond = (idx) => onChange((conds || []).filter((_, i) => i !== idx));
   const updateCond = (idx, field, val) => {
-    const newC = [...conds];
+    const newC = [...(conds || [])];
     newC[idx] = { ...newC[idx], [field]: val };
     onChange(newC);
   };
@@ -68,63 +71,64 @@ function ConditionEditor({ label, conds, onChange, advancedMode, onToggleAdvance
           <input
             value={conditionStr || ''}
             onChange={e => onConditionStrChange(e.target.value)}
-            placeholder="s.portfolio.cash > 1000000 && s.age < 30"
+            placeholder="nw < 0 && s.age >= 18"
             className="font-mono"
             style={{ color: 'var(--color-accent)', width:'100%' }}
           />
           <small className="color-mute" style={{ marginTop: 6, display: 'block' }}>
-            提示：<code>s</code> 為狀態引擎物件，可使用的變數如 <code>s.age</code>, <code>s.portfolio.cash</code>, <code>s.lifeStats.happiness</code> 等。遊戲每個月會自動 `eval` 這個字串，若為 `true` 則解鎖。
+            提示：<code>s</code> 為狀態引擎物件，<code>nw</code> 為總淨值。當條件回傳 <code>true</code> 時，遊戲將即刻觸發此結局結算。
           </small>
         </>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {(conds||[]).map((c, i) => (
-            <div key={c.id} style={{ display:'flex', gap:6, alignItems:'center' }}>
-              {i > 0 && (
-                <select value={c.logic} onChange={e => updateCond(i, 'logic', e.target.value)} style={{ width:70 }}>
-                  <option value="&&">AND</option>
-                  <option value="||">OR</option>
+          {(conds && conds.length > 0) ? conds.map((c, i) => (
+            <div key={c.id || i} style={{ display:'flex', gap:6, alignItems:'center' }}>
+              {i > 0 ? (
+                <select value={c.logic || '&&'} onChange={e => updateCond(i, 'logic', e.target.value)} style={{ width:75 }}>
+                  <option value="&&">AND 且</option>
+                  <option value="||">OR 或</option>
                 </select>
+              ) : (
+                <div style={{ width:75, textAlign:'center', color:'var(--color-muted)', fontSize:'0.75rem', fontWeight:600 }}>當</div>
               )}
-              {i === 0 && <div style={{ width:70, textAlign:'center', color:'var(--color-muted)', fontSize:'0.75rem' }}>當</div>}
-              <select value={c.field} onChange={e => updateCond(i, 'field', e.target.value)} style={{ flex:1 }}>
-                {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label} ({o.value})</option>)}
+              <select value={c.field || 's.portfolio.cash'} onChange={e => updateCond(i, 'field', e.target.value)} style={{ flex:1 }}>
+                {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <select value={c.op} onChange={e => updateCond(i, 'op', e.target.value)} style={{ width:110 }}>
+              <select value={c.op || '<'} onChange={e => updateCond(i, 'op', e.target.value)} style={{ width:120 }}>
                 {OP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <input type="number" value={c.val} onChange={e => updateCond(i, 'val', parseFloat(e.target.value)||0)} style={{ width:100 }} />
-              <button className="btn btn-ghost btn-sm" style={{ padding:'0 8px' }} onClick={() => removeCond(i)}>✕</button>
+              <input type="number" value={c.val ?? 0} onChange={e => updateCond(i, 'val', parseFloat(e.target.value) || 0)} style={{ width:100 }} />
+              <button className="btn btn-ghost btn-sm" style={{ padding:'0 8px', color:'var(--color-red)' }} onClick={() => removeCond(i)}>✕</button>
             </div>
-          ))}
-          <button className="btn btn-ghost" style={{ width: '100%', border: '1px dashed var(--border-color)' }} onClick={addCond}>＋ 新增條件</button>
+          )) : (
+            <div className="color-mute text-xs" style={{ padding: '4px 0' }}>尚未設定條件，點擊下方新增。</div>
+          )}
+          <button className="btn btn-ghost" style={{ width: '100%', border: '1px dashed var(--border-color)', marginTop: 4 }} onClick={addCond}>＋ 新增條件</button>
         </div>
       )}
     </div>
   );
 }
 
-
-// ─── Ending Card (for tree view) ─────────────────────────────────────────
-function EndingCard({ a, onToggle, onEdit, onDelete }) {
-  const isEnabled = a.enabled !== false;
+// ─── Ending Card (for tree view) ─────────────────────────────────────────────
+function EndingCard({ e, onToggle, onEdit, onDelete }) {
+  const isEnabled = e.enabled !== false;
   return (
     <div style={{
       width: 200, background: isEnabled ? "#0f172a" : "#0a0f1e",
-      border: `2px solid ${isEnabled ? "#f59e0b" : "#374151"}`,
+      border: `2px solid ${isEnabled ? "#ec4899" : "#374151"}`,
       borderRadius: 10, padding: "10px 12px",
       display: "flex", flexDirection: "column", gap: 6,
       opacity: isEnabled ? 1 : 0.45,
-      boxShadow: isEnabled ? "0 2px 12px #f59e0b22" : "none",
+      boxShadow: isEnabled ? "0 2px 12px #ec489922" : "none",
       transition: "all 0.15s",
       position: "relative",
     }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 20 }}>{a.icon || "🏆"}</span>
-        {/* Mini toggle */}
+        <span style={{ fontSize: 20 }}>{e.icon || "🎬"}</span>
         <label
-          onClick={e => { e.stopPropagation(); onToggle(a); }}
+          onClick={ev => { ev.stopPropagation(); onToggle(e); }}
           style={{ cursor: "pointer" }}
           title={isEnabled ? "停用" : "啟用"}
         >
@@ -148,32 +152,32 @@ function EndingCard({ a, onToggle, onEdit, onDelete }) {
         overflow: "hidden", display: "-webkit-box",
         WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
       }}>
-        {a.title}
+        {e.title}
       </div>
 
       {/* Condition (truncated) */}
       <div style={{
-        fontFamily: "monospace", fontSize: 9, color: "#f59e0b",
-        background: "#1c1403", borderRadius: 4, padding: "3px 6px",
+        fontFamily: "monospace", fontSize: 9, color: "#ec4899",
+        background: "#1c0b16", borderRadius: 4, padding: "3px 6px",
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
       }}>
-        {a.conditionStr}
+        {e.conditionStr || 'false'}
       </div>
 
       {/* ID */}
-      <div style={{ fontSize: 8, color: "#475569", fontFamily: "monospace" }}>{a.id}</div>
+      <div style={{ fontSize: 8, color: "#475569", fontFamily: "monospace" }}>{e.id}</div>
 
       {/* Actions */}
       <div style={{ display: "flex", gap: 4, marginTop: 2 }}>
         <button
-          onClick={() => onEdit(a)}
+          onClick={() => onEdit(e)}
           style={{
             flex: 1, background: "#1d4ed8", border: "none", color: "#fff",
             borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 10, fontWeight: 600,
           }}
         >✏️ 編輯</button>
         <button
-          onClick={() => onDelete(a)}
+          onClick={() => onDelete(e)}
           style={{
             background: "#b91c1c", border: "none", color: "#fff",
             borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 10,
@@ -184,7 +188,7 @@ function EndingCard({ a, onToggle, onEdit, onDelete }) {
   );
 }
 
-// ─── Ending Tree View ────────────────────────────────────────────────────
+// ─── Ending Tree View ────────────────────────────────────────────────────────
 function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
   const [searchQ, setSearchQ] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -193,23 +197,21 @@ function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
     let r = endings;
     if (searchQ) {
       const q = searchQ.toLowerCase();
-      r = r.filter(a => a.title?.toLowerCase().includes(q) || a.id?.toLowerCase().includes(q));
+      r = r.filter(e => e.title?.toLowerCase().includes(q) || e.id?.toLowerCase().includes(q));
     }
-    if (filterType === "enabled")  r = r.filter(a => a.enabled !== false);
-    if (filterType === "disabled") r = r.filter(a => a.enabled === false);
+    if (filterType === "enabled")  r = r.filter(e => e.enabled !== false);
+    if (filterType === "disabled") r = r.filter(e => e.enabled === false);
     return r;
   }, [endings, searchQ, filterType]);
 
-  // Group by first letter of title (A-Z, others)
   const groups = useMemo(() => {
     const map = new Map();
     map.set("🔛 啟用中", []);
     map.set("🚫 已停用", []);
-    visible.forEach(a => {
-      const key = a.enabled !== false ? "🔛 啟用中" : "🚫 已停用";
-      map.get(key).push(a);
+    visible.forEach(e => {
+      const key = e.enabled !== false ? "🔛 啟用中" : "🚫 已停用";
+      map.get(key).push(e);
     });
-    // Remove empty groups
     for (const [k, v] of map) { if (v.length === 0) map.delete(k); }
     return map;
   }, [visible]);
@@ -232,7 +234,7 @@ function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
         />
         {[["all", "全部"], ["enabled", "🔛 啟用"], ["disabled", "🚫 停用"]].map(([v, l]) => (
           <button key={v} onClick={() => setFilterType(v)} style={{
-            background: filterType === v ? "#d97706" : "#0f172a",
+            background: filterType === v ? "#ec4899" : "#0f172a",
             border: "1px solid #334155",
             color: filterType === v ? "#fff" : "#64748b",
             borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer",
@@ -244,7 +246,6 @@ function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
       {/* Groups */}
       {[...groups.entries()].map(([groupName, items]) => (
         <div key={groupName}>
-          {/* Group header */}
           <div style={{
             fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 1,
             textTransform: "uppercase", marginBottom: 8,
@@ -253,11 +254,10 @@ function EndingTreeView({ endings, onToggle, onEdit, onDelete }) {
             {groupName}
             <span style={{ color: "#334155", marginLeft: 8, fontWeight: 400 }}>×{items.length}</span>
           </div>
-          {/* Cards grid */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {items.map(a => (
+            {items.map(e => (
               <EndingCard
-                key={a.id} a={a}
+                key={e.id} e={e}
                 onToggle={onToggle} onEdit={onEdit} onDelete={onDelete}
               />
             ))}
@@ -290,7 +290,13 @@ export default function EndingManager({ showToast }) {
     setLoading(true);
     try {
       const snap = await getDoc(doc(db, 'config', 'endings'));
-      setEndings(snap.exists() ? (snap.data().list || []) : []);
+      let list = snap.exists() ? (snap.data().list || []) : [];
+      if (list.length === 0) {
+        await setDoc(doc(db, 'config', 'endings'), { list: DEFAULT_ENDINGS }, { merge: true });
+        list = DEFAULT_ENDINGS;
+        showToast(`✅ 已自動匯入 ${DEFAULT_ENDINGS.length} 筆預設結局！`, 'success');
+      }
+      setEndings(list);
     } catch (e) {
       showToast('載入結局失敗: ' + e.message, 'error');
     } finally {
@@ -300,54 +306,72 @@ export default function EndingManager({ showToast }) {
 
   function openNew() {
     setEditEnding(null);
-    setForm({ ...EMPTY_ENDING, id: `a_${Date.now()}` });
+    setForm({ 
+      ...EMPTY_ENDING, 
+      id: `end_${Date.now()}`,
+      guiConds: [{ id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '<', val: 0 }]
+    });
     setShowForm(true);
   }
 
-  function openEdit(a) {
-    setEditEnding(a);
-    const hasComplexJS = a.conditionStr && a.conditionStr.length > 0 && (!a.guiConds || a.guiConds.length === 0);
-    setForm(JSON.parse(JSON.stringify({ 
-      enabled: true, 
-      guiConds: [], 
-      advancedMode: hasComplexJS, 
-      ...a 
-    })));
+  function openEdit(e) {
+    setEditEnding(e);
+    const hasComplexJS = e.conditionStr && e.conditionStr.length > 0 && (!e.guiConds || e.guiConds.length === 0);
+    setForm({ 
+      ...EMPTY_ENDING,
+      ...JSON.parse(JSON.stringify(e)),
+      enabled: e.enabled !== false, 
+      guiConds: e.guiConds || [{ id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '<', val: 0 }], 
+      advancedMode: !!hasComplexJS
+    });
     setShowForm(true);
   }
 
-  async function toggleEnabled(a) {
+  async function toggleEnabled(e) {
     try {
       const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
-      list = list.map(item => item.id === a.id ? { ...item, enabled: !item.enabled } : item);
+      list = list.map(item => item.id === e.id ? { ...item, enabled: item.enabled === false ? true : false } : item);
       await setDoc(configRef, { list }, { merge: true });
       setEndings(list);
-      showToast(a.enabled ? '已關閉結局' : '已啟用結局', 'success');
-    } catch (e) {
-      showToast('切換狀態失敗: ' + e.message, 'error');
+      showToast(e.enabled === false ? '已啟用結局' : '已關閉結局', 'success');
+    } catch (err) {
+      showToast('切換狀態失敗: ' + err.message, 'error');
     }
   }
 
   async function saveEnding() {
-    if (!form.title) { showToast('結局名稱不能為空', 'error'); return; }
-    if (!form.conditionStr) { showToast('解鎖條件不能為空', 'error'); return; }
+    if (!form.title || !form.title.trim()) { 
+      showToast('結局名稱不能為空', 'error'); 
+      return; 
+    }
+
+    const conditionToSave = form.advancedMode 
+      ? form.conditionStr 
+      : guiToConditionStr(form.guiConds);
+
+    if (!conditionToSave || !conditionToSave.trim()) { 
+      showToast('觸發條件不能為空', 'error'); 
+      return; 
+    }
+
     setSaving(true);
     try {
+      const endingToSave = {
+        ...form,
+        conditionStr: conditionToSave,
+        guiConds: form.guiConds || []
+      };
+
       const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
 
-      const achvToSave = {
-        ...form,
-        conditionStr: form.advancedMode ? form.conditionStr : guiToConditionStr(form.guiConds)
-      };
-
       if (editEnding) {
-        list = list.map(a => a.id === form.id ? achvToSave : a);
+        list = list.map(e => e.id === form.id ? endingToSave : e);
       } else {
-        list = [...list, achvToSave];
+        list = [...list, endingToSave];
       }
 
       await setDoc(configRef, { list }, { merge: true });
@@ -361,18 +385,49 @@ export default function EndingManager({ showToast }) {
     }
   }
 
-  async function deleteEnding(a) {
-    if (!confirm(`確定要刪除「${a.title}」嗎？`)) return;
+  async function deleteEnding(e) {
+    if (!confirm(`確定要刪除「${e.title}」嗎？`)) return;
     try {
       const configRef = doc(db, 'config', 'endings');
       const snap = await getDoc(configRef);
-      const list = (snap.data().list || []).filter(item => item.id !== a.id);
+      const list = (snap.data().list || []).filter(item => item.id !== e.id);
       await setDoc(configRef, { list });
       setEndings(list);
       showToast('🗑️ 結局已刪除', 'info');
-    } catch (e) {
-      showToast('刪除失敗: ' + e.message, 'error');
+    } catch (err) {
+      showToast('刪除失敗: ' + err.message, 'error');
     }
+  }
+
+  function handleExport() {
+    const blob = new Blob([JSON.stringify(endings, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `investsim_endings_${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast(`📤 已匯出 ${endings.length} 筆結局`, 'success');
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!Array.isArray(imported)) throw new Error('格式錯誤：必須是 JSON 陣列');
+        const replace = window.confirm(`即將匯入 ${imported.length} 筆結局。\n\n確定 (OK) = 取代全部現有結局\n取消 (Cancel) = 合併（保留現有）`);
+        const merged = replace ? imported : [...endings.filter(ex => !imported.find(im => im.id === ex.id)), ...imported];
+        const configRef = doc(db, 'config', 'endings');
+        await setDoc(configRef, { list: merged });
+        setEndings(merged);
+        showToast(`✅ 成功匯入 ${imported.length} 筆結局`, 'success');
+      } catch (err) {
+        showToast('匯入失敗：' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   }
 
   function updateForm(field, value) {
@@ -384,9 +439,16 @@ export default function EndingManager({ showToast }) {
       <div className="page-header">
         <div>
           <h1 className="page-title gradient-text">結局管理</h1>
-          <p className="page-subtitle">共 {endings.length} 個結局・自訂玩家的結局與解鎖條件</p>
+          <p className="page-subtitle">共 {endings.length} 個結局・自訂玩家遊戲結束的觸發條件與結算說明</p>
         </div>
-        <button className="btn btn-primary" onClick={openNew}>＋ 新增結局</button>
+        <div className="flex gap-3" style={{ flexWrap:'wrap' }}>
+          <button className="btn btn-ghost btn-sm" onClick={handleExport}>📤 匯出 JSON</button>
+          <label className="btn btn-ghost btn-sm" style={{ cursor:'pointer' }}>
+            📥 匯入 JSON
+            <input type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
+          </label>
+          <button className="btn btn-primary" onClick={openNew}>＋ 新增結局</button>
+        </div>
       </div>
 
       {/* Tab switcher */}
@@ -422,30 +484,30 @@ export default function EndingManager({ showToast }) {
                     <th>結局 ID</th>
                     <th>名稱</th>
                     <th>描述</th>
-                    <th>解鎖條件表示式</th>
+                    <th>觸發條件表示式</th>
                     <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {endings.map(a => {
-                    const isEnabled = a.enabled !== false;
+                  {endings.map(e => {
+                    const isEnabled = e.enabled !== false;
                     return (
-                      <tr key={a.id} style={{ opacity: isEnabled ? 1 : 0.5 }}>
+                      <tr key={e.id} style={{ opacity: isEnabled ? 1 : 0.5 }}>
                         <td>
                           <label className="switch" style={{ cursor: 'pointer' }}>
-                            <input type="checkbox" checked={isEnabled} onChange={() => toggleEnabled(a)} />
+                            <input type="checkbox" checked={isEnabled} onChange={() => toggleEnabled(e)} />
                             <span className="slider round"></span>
                           </label>
                         </td>
-                        <td style={{ fontSize: '1.25rem' }}>{a.icon}</td>
-                        <td className="font-mono color-mute">{a.id}</td>
-                        <td><span style={{ fontWeight: 600 }}>{a.title}</span></td>
-                        <td className="color-mute" style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.description}</td>
-                        <td className="font-mono color-accent" style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.conditionStr}</td>
+                        <td style={{ fontSize: '1.25rem' }}>{e.icon}</td>
+                        <td className="font-mono color-mute">{e.id}</td>
+                        <td><span style={{ fontWeight: 600 }}>{e.title}</span></td>
+                        <td className="color-mute" style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</td>
+                        <td className="font-mono color-accent" style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.conditionStr || 'false'}</td>
                         <td>
                           <div className="flex gap-2">
-                            <button className="btn btn-ghost btn-sm" onClick={() => openEdit(a)}>✏️</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => deleteEnding(a)}>🗑️</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => openEdit(e)}>✏️</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => deleteEnding(e)}>🗑️</button>
                           </div>
                         </td>
                       </tr>
@@ -460,41 +522,37 @@ export default function EndingManager({ showToast }) {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
-          <div className="modal" style={{ maxWidth: 600 }}>
+        <div className="modal-overlay" onClick={(ev) => ev.target === ev.currentTarget && setShowForm(false)}>
+          <div className="modal" style={{ maxWidth: 640 }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editEnding ? '編輯結局' : '新增結局'}</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editEnding ? '✏️ 編輯結局' : '＋ 新增結局'}</h2>
               <button className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>✕</button>
             </div>
 
             <div className="flex-col gap-4">
-              <div className="form-group flex items-center gap-3">
-                <label>是否啟用</label>
-                <input type="checkbox" checked={form.enabled !== false} onChange={e => updateForm('enabled', e.target.checked)} />
-              </div>
               <div className="grid-2">
                 <div className="form-group">
                   <label>圖示 (Emoji)</label>
-                  <input value={form.icon} onChange={e => updateForm('icon', e.target.value)} placeholder="🏆" />
+                  <input value={form.icon} onChange={ev => updateForm('icon', ev.target.value)} placeholder="🎬" />
                 </div>
                 <div className="form-group">
                   <label>結局 ID</label>
-                  <input value={form.id} onChange={e => updateForm('id', e.target.value)} placeholder="a_001" className="font-mono" />
+                  <input value={form.id} onChange={ev => updateForm('id', ev.target.value)} placeholder="end_001" className="font-mono" />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>結局名稱</label>
-                <input value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="例：百萬富翁" />
+                <label>結局名稱 *</label>
+                <input value={form.title} onChange={ev => updateForm('title', ev.target.value)} placeholder="例：破產倒閉" />
               </div>
 
               <div className="form-group">
-                <label>結局描述</label>
-                <textarea value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="描述這個結局的意義..." />
+                <label>結局結算描述</label>
+                <textarea value={form.description} onChange={ev => updateForm('description', ev.target.value)} placeholder="描述達成此結局時顯示給玩家的結算話語..." rows={2} />
               </div>
 
               <ConditionEditor
-                label="解鎖條件"
+                label="🎯 觸發條件（當條件為真時立即觸發遊戲結束）"
                 conds={form.guiConds}
                 onChange={v => updateForm('guiConds', v)}
                 advancedMode={form.advancedMode}
@@ -506,7 +564,7 @@ export default function EndingManager({ showToast }) {
               <div className="flex justify-end gap-3" style={{ marginTop: 10 }}>
                 <button className="btn btn-ghost" onClick={() => setShowForm(false)}>取消</button>
                 <button className="btn btn-primary" onClick={saveEnding} disabled={saving}>
-                  {saving ? '儲存中...' : '儲存結局'}
+                  {saving ? '儲存中...' : (editEnding ? '儲存變更' : '發布結局')}
                 </button>
               </div>
             </div>

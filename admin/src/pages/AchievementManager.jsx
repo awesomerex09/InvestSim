@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config.js';
+import { DEFAULT_ACHIEVEMENTS } from '../data/seedAchievements.js';
 
 const EMPTY_ACHIEVEMENT = {
   id:          '',
@@ -8,23 +9,25 @@ const EMPTY_ACHIEVEMENT = {
   description: '',
   icon:        '🏆',
   conditionStr: '',
-  guiConds:    [],
+  guiConds:    [{ id: 1, logic: '&&', field: 's.portfolio.cash', op: '>=', val: 1000000 }],
   advancedMode: false,
   enabled:     true
 };
 
 // ─── Reusable Condition Editor ─────────────────────────────────────────────
 const FIELD_OPTIONS = [
-  { value: 's.age', label: '年齡' },
-  { value: 's.portfolio.cash', label: '現金' },
-  { value: 's.portfolio.twStock', label: '台股' },
-  { value: 's.portfolio.usStock', label: '美股' },
-  { value: 's.portfolio.crypto', label: '加密貨幣' },
-  { value: 's.portfolio.realEstate', label: '房地產' },
-  { value: 's.lifeStats.appearance', label: '顏值' },
-  { value: 's.lifeStats.intelligence', label: '智力' },
-  { value: 's.lifeStats.constitution', label: '體質' },
-  { value: 's.lifeStats.happiness', label: '快樂' },
+  { value: 'nw', label: '總資產淨值 (nw)' },
+  { value: 's.portfolio.cash', label: '現金 (cash)' },
+  { value: 's.portfolio.twStock', label: '台股市值 (twStock)' },
+  { value: 's.portfolio.usStock', label: '美股市值 (usStock)' },
+  { value: 's.portfolio.crypto', label: '加密貨幣 (crypto)' },
+  { value: 's.portfolio.realEstate', label: '房地產 (realEstate)' },
+  { value: 's.portfolio.gold', label: '黃金市值 (gold)' },
+  { value: 's.age', label: '玩家年齡 (age)' },
+  { value: 's.lifeStats.appearance', label: '顏值 (appearance)' },
+  { value: 's.lifeStats.intelligence', label: '智力 (intelligence)' },
+  { value: 's.lifeStats.constitution', label: '體質 (constitution)' },
+  { value: 's.lifeStats.happiness', label: '快樂 (happiness)' },
 ];
 
 const OP_OPTIONS = [
@@ -39,16 +42,16 @@ function guiToConditionStr(conds) {
   if (!conds || conds.length === 0) return 'true';
   return conds.map((c, i) => {
     let str = `${c.field} ${c.op} ${c.val}`;
-    if (i > 0) str = ` ${c.logic} ${str}`;
+    if (i > 0) str = ` ${c.logic || '&&'} ${str}`;
     return str;
   }).join('');
 }
 
 function ConditionEditor({ label, conds, onChange, advancedMode, onToggleAdvanced, conditionStr, onConditionStrChange }) {
-  const addCond = () => onChange([...(conds||[]), { id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '>=', val: 0 }]);
-  const removeCond = (idx) => onChange(conds.filter((_, i) => i !== idx));
+  const addCond = () => onChange([...(conds || []), { id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '>=', val: 0 }]);
+  const removeCond = (idx) => onChange((conds || []).filter((_, i) => i !== idx));
   const updateCond = (idx, field, val) => {
-    const newC = [...conds];
+    const newC = [...(conds || [])];
     newC[idx] = { ...newC[idx], [field]: val };
     onChange(newC);
   };
@@ -73,37 +76,39 @@ function ConditionEditor({ label, conds, onChange, advancedMode, onToggleAdvance
             style={{ color: 'var(--color-accent)', width:'100%' }}
           />
           <small className="color-mute" style={{ marginTop: 6, display: 'block' }}>
-            提示：<code>s</code> 為狀態引擎物件，可使用的變數如 <code>s.age</code>, <code>s.portfolio.cash</code>, <code>s.lifeStats.happiness</code> 等。遊戲每個月會自動 `eval` 這個字串，若為 `true` 則解鎖。
+            提示：<code>s</code> 為狀態引擎物件，<code>nw</code> 為總淨值。可使用如 <code>s.age</code>, <code>s.portfolio.cash</code>, <code>nw</code> 等變數。遊戲每回合會自動判定條件是否達成。
           </small>
         </>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {(conds||[]).map((c, i) => (
-            <div key={c.id} style={{ display:'flex', gap:6, alignItems:'center' }}>
-              {i > 0 && (
-                <select value={c.logic} onChange={e => updateCond(i, 'logic', e.target.value)} style={{ width:70 }}>
-                  <option value="&&">AND</option>
-                  <option value="||">OR</option>
+          {(conds && conds.length > 0) ? conds.map((c, i) => (
+            <div key={c.id || i} style={{ display:'flex', gap:6, alignItems:'center' }}>
+              {i > 0 ? (
+                <select value={c.logic || '&&'} onChange={e => updateCond(i, 'logic', e.target.value)} style={{ width:75 }}>
+                  <option value="&&">AND 且</option>
+                  <option value="||">OR 或</option>
                 </select>
+              ) : (
+                <div style={{ width:75, textAlign:'center', color:'var(--color-muted)', fontSize:'0.75rem', fontWeight:600 }}>當</div>
               )}
-              {i === 0 && <div style={{ width:70, textAlign:'center', color:'var(--color-muted)', fontSize:'0.75rem' }}>當</div>}
-              <select value={c.field} onChange={e => updateCond(i, 'field', e.target.value)} style={{ flex:1 }}>
-                {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label} ({o.value})</option>)}
+              <select value={c.field || 's.portfolio.cash'} onChange={e => updateCond(i, 'field', e.target.value)} style={{ flex:1 }}>
+                {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <select value={c.op} onChange={e => updateCond(i, 'op', e.target.value)} style={{ width:110 }}>
+              <select value={c.op || '>='} onChange={e => updateCond(i, 'op', e.target.value)} style={{ width:120 }}>
                 {OP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
-              <input type="number" value={c.val} onChange={e => updateCond(i, 'val', parseFloat(e.target.value)||0)} style={{ width:100 }} />
-              <button className="btn btn-ghost btn-sm" style={{ padding:'0 8px' }} onClick={() => removeCond(i)}>✕</button>
+              <input type="number" value={c.val ?? 0} onChange={e => updateCond(i, 'val', parseFloat(e.target.value) || 0)} style={{ width:100 }} />
+              <button className="btn btn-ghost btn-sm" style={{ padding:'0 8px', color:'var(--color-red)' }} onClick={() => removeCond(i)}>✕</button>
             </div>
-          ))}
-          <button className="btn btn-ghost" style={{ width: '100%', border: '1px dashed var(--border-color)' }} onClick={addCond}>＋ 新增條件</button>
+          )) : (
+            <div className="color-mute text-xs" style={{ padding: '4px 0' }}>尚未設定條件，點擊下方新增。</div>
+          )}
+          <button className="btn btn-ghost" style={{ width: '100%', border: '1px dashed var(--border-color)', marginTop: 4 }} onClick={addCond}>＋ 新增條件</button>
         </div>
       )}
     </div>
   );
 }
-
 
 // ─── Achievement Card (for tree view) ─────────────────────────────────────────
 function AchievementCard({ a, onToggle, onEdit, onDelete }) {
@@ -122,7 +127,6 @@ function AchievementCard({ a, onToggle, onEdit, onDelete }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 20 }}>{a.icon || "🏆"}</span>
-        {/* Mini toggle */}
         <label
           onClick={e => { e.stopPropagation(); onToggle(a); }}
           style={{ cursor: "pointer" }}
@@ -157,7 +161,7 @@ function AchievementCard({ a, onToggle, onEdit, onDelete }) {
         background: "#1c1403", borderRadius: 4, padding: "3px 6px",
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
       }}>
-        {a.conditionStr}
+        {a.conditionStr || 'true'}
       </div>
 
       {/* ID */}
@@ -200,7 +204,6 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
     return r;
   }, [achievements, searchQ, filterType]);
 
-  // Group by first letter of title (A-Z, others)
   const groups = useMemo(() => {
     const map = new Map();
     map.set("🔛 啟用中", []);
@@ -209,7 +212,6 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
       const key = a.enabled !== false ? "🔛 啟用中" : "🚫 已停用";
       map.get(key).push(a);
     });
-    // Remove empty groups
     for (const [k, v] of map) { if (v.length === 0) map.delete(k); }
     return map;
   }, [visible]);
@@ -244,7 +246,6 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
       {/* Groups */}
       {[...groups.entries()].map(([groupName, items]) => (
         <div key={groupName}>
-          {/* Group header */}
           <div style={{
             fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 1,
             textTransform: "uppercase", marginBottom: 8,
@@ -253,7 +254,6 @@ function AchievementTreeView({ achievements, onToggle, onEdit, onDelete }) {
             {groupName}
             <span style={{ color: "#334155", marginLeft: 8, fontWeight: 400 }}>×{items.length}</span>
           </div>
-          {/* Cards grid */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {items.map(a => (
               <AchievementCard
@@ -290,7 +290,13 @@ export default function AchievementManager({ showToast }) {
     setLoading(true);
     try {
       const snap = await getDoc(doc(db, 'config', 'achievements'));
-      setAchievements(snap.exists() ? (snap.data().list || []) : []);
+      let list = snap.exists() ? (snap.data().list || []) : [];
+      if (list.length === 0) {
+        await setDoc(doc(db, 'config', 'achievements'), { list: DEFAULT_ACHIEVEMENTS }, { merge: true });
+        list = DEFAULT_ACHIEVEMENTS;
+        showToast(`✅ 已自動匯入 ${DEFAULT_ACHIEVEMENTS.length} 筆預設成就！`, 'success');
+      }
+      setAchievements(list);
     } catch (e) {
       showToast('載入成就失敗: ' + e.message, 'error');
     } finally {
@@ -300,19 +306,24 @@ export default function AchievementManager({ showToast }) {
 
   function openNew() {
     setEditAchv(null);
-    setForm({ ...EMPTY_ACHIEVEMENT, id: `a_${Date.now()}` });
+    setForm({ 
+      ...EMPTY_ACHIEVEMENT, 
+      id: `a_${Date.now()}`,
+      guiConds: [{ id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '>=', val: 1000000 }]
+    });
     setShowForm(true);
   }
 
   function openEdit(a) {
     setEditAchv(a);
     const hasComplexJS = a.conditionStr && a.conditionStr.length > 0 && (!a.guiConds || a.guiConds.length === 0);
-    setForm(JSON.parse(JSON.stringify({ 
-      enabled: true, 
-      guiConds: [], 
-      advancedMode: hasComplexJS, 
-      ...a 
-    })));
+    setForm({ 
+      ...EMPTY_ACHIEVEMENT,
+      ...JSON.parse(JSON.stringify(a)),
+      enabled: a.enabled !== false, 
+      guiConds: a.guiConds || [{ id: Date.now(), logic: '&&', field: 's.portfolio.cash', op: '>=', val: 1000000 }], 
+      advancedMode: !!hasComplexJS
+    });
     setShowForm(true);
   }
 
@@ -321,28 +332,41 @@ export default function AchievementManager({ showToast }) {
       const configRef = doc(db, 'config', 'achievements');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
-      list = list.map(item => item.id === a.id ? { ...item, enabled: !item.enabled } : item);
+      list = list.map(item => item.id === a.id ? { ...item, enabled: item.enabled === false ? true : false } : item);
       await setDoc(configRef, { list }, { merge: true });
       setAchievements(list);
-      showToast(a.enabled ? '已關閉成就' : '已啟用成就', 'success');
+      showToast(a.enabled === false ? '已啟用成就' : '已關閉成就', 'success');
     } catch (e) {
       showToast('切換狀態失敗: ' + e.message, 'error');
     }
   }
 
   async function saveAchievement() {
-    if (!form.title) { showToast('成就名稱不能為空', 'error'); return; }
-    if (!form.conditionStr) { showToast('解鎖條件不能為空', 'error'); return; }
+    if (!form.title || !form.title.trim()) { 
+      showToast('成就名稱不能為空', 'error'); 
+      return; 
+    }
+
+    const conditionToSave = form.advancedMode 
+      ? form.conditionStr 
+      : guiToConditionStr(form.guiConds);
+
+    if (!conditionToSave || !conditionToSave.trim()) { 
+      showToast('解鎖條件不能為空', 'error'); 
+      return; 
+    }
+
     setSaving(true);
     try {
+      const achvToSave = {
+        ...form,
+        conditionStr: conditionToSave,
+        guiConds: form.guiConds || []
+      };
+
       const configRef = doc(db, 'config', 'achievements');
       const snap = await getDoc(configRef);
       let list = snap.exists() ? (snap.data().list || []) : [];
-
-      const achvToSave = {
-        ...form,
-        conditionStr: form.advancedMode ? form.conditionStr : guiToConditionStr(form.guiConds)
-      };
 
       if (editAchv) {
         list = list.map(a => a.id === form.id ? achvToSave : a);
@@ -375,6 +399,37 @@ export default function AchievementManager({ showToast }) {
     }
   }
 
+  function handleExport() {
+    const blob = new Blob([JSON.stringify(achievements, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `investsim_achievements_${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast(`📤 已匯出 ${achievements.length} 筆成就`, 'success');
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!Array.isArray(imported)) throw new Error('格式錯誤：必須是 JSON 陣列');
+        const replace = window.confirm(`即將匯入 ${imported.length} 筆成就。\n\n確定 (OK) = 取代全部現有成就\n取消 (Cancel) = 合併（保留現有）`);
+        const merged = replace ? imported : [...achievements.filter(ex => !imported.find(im => im.id === ex.id)), ...imported];
+        const configRef = doc(db, 'config', 'achievements');
+        await setDoc(configRef, { list: merged });
+        setAchievements(merged);
+        showToast(`✅ 成功匯入 ${imported.length} 筆成就`, 'success');
+      } catch (err) {
+        showToast('匯入失敗：' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
   function updateForm(field, value) {
     setForm(f => ({ ...f, [field]: value }));
   }
@@ -386,7 +441,14 @@ export default function AchievementManager({ showToast }) {
           <h1 className="page-title gradient-text">成就管理</h1>
           <p className="page-subtitle">共 {achievements.length} 個成就・自訂玩家的成就與解鎖條件</p>
         </div>
-        <button className="btn btn-primary" onClick={openNew}>＋ 新增成就</button>
+        <div className="flex gap-3" style={{ flexWrap:'wrap' }}>
+          <button className="btn btn-ghost btn-sm" onClick={handleExport}>📤 匯出 JSON</button>
+          <label className="btn btn-ghost btn-sm" style={{ cursor:'pointer' }}>
+            📥 匯入 JSON
+            <input type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
+          </label>
+          <button className="btn btn-primary" onClick={openNew}>＋ 新增成就</button>
+        </div>
       </div>
 
       {/* Tab switcher */}
@@ -441,7 +503,7 @@ export default function AchievementManager({ showToast }) {
                         <td className="font-mono color-mute">{a.id}</td>
                         <td><span style={{ fontWeight: 600 }}>{a.title}</span></td>
                         <td className="color-mute" style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.description}</td>
-                        <td className="font-mono color-accent" style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.conditionStr}</td>
+                        <td className="font-mono color-accent" style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.conditionStr || 'true'}</td>
                         <td>
                           <div className="flex gap-2">
                             <button className="btn btn-ghost btn-sm" onClick={() => openEdit(a)}>✏️</button>
@@ -461,17 +523,13 @@ export default function AchievementManager({ showToast }) {
       {/* Form Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
-          <div className="modal" style={{ maxWidth: 600 }}>
+          <div className="modal" style={{ maxWidth: 640 }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editAchv ? '編輯成就' : '新增成就'}</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{editAchv ? '✏️ 編輯成就' : '＋ 新增成就'}</h2>
               <button className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>✕</button>
             </div>
 
             <div className="flex-col gap-4">
-              <div className="form-group flex items-center gap-3">
-                <label>是否啟用</label>
-                <input type="checkbox" checked={form.enabled !== false} onChange={e => updateForm('enabled', e.target.checked)} />
-              </div>
               <div className="grid-2">
                 <div className="form-group">
                   <label>圖示 (Emoji)</label>
@@ -484,17 +542,17 @@ export default function AchievementManager({ showToast }) {
               </div>
 
               <div className="form-group">
-                <label>成就名稱</label>
+                <label>成就名稱 *</label>
                 <input value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="例：百萬富翁" />
               </div>
 
               <div className="form-group">
                 <label>成就描述</label>
-                <textarea value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="描述這個成就的意義..." />
+                <textarea value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="描述這個成就的意義..." rows={2} />
               </div>
 
               <ConditionEditor
-                label="解鎖條件"
+                label="🎯 解鎖條件"
                 conds={form.guiConds}
                 onChange={v => updateForm('guiConds', v)}
                 advancedMode={form.advancedMode}
@@ -506,7 +564,7 @@ export default function AchievementManager({ showToast }) {
               <div className="flex justify-end gap-3" style={{ marginTop: 10 }}>
                 <button className="btn btn-ghost" onClick={() => setShowForm(false)}>取消</button>
                 <button className="btn btn-primary" onClick={saveAchievement} disabled={saving}>
-                  {saving ? '儲存中...' : '儲存成就'}
+                  {saving ? '儲存中...' : (editAchv ? '儲存變更' : '發布成就')}
                 </button>
               </div>
             </div>
