@@ -285,6 +285,22 @@ export default function EventManager({ showToast }) {
     e.target.value = '';
   }
 
+  async function handleSyncStandard() {
+    const allSeeds = [...INVESTSIM_EVENTS, ...LIFE_TW_EVENTS];
+    if (!window.confirm(`即將將資料庫同步為最新標準化事件庫（共 ${allSeeds.length} 筆，包含最新年齡校正、安全代碼與選項）。\n\n確定要覆蓋並同步至雲端 Firestore 嗎？`)) return;
+    setLoading(true);
+    try {
+      const configRef = doc(db, 'config', 'events');
+      await setDoc(configRef, { list: allSeeds }, { merge: true });
+      setEvents(allSeeds);
+      showToast(`✅ 已成功同步最新 ${allSeeds.length} 筆標準化事件庫！`, 'success');
+    } catch (e) {
+      showToast('同步失敗: ' + e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function updateForm(field, value) { setForm(f => ({ ...f, [field]: value })); }
   function updateChoice(i, field, value) {
     setForm(f => { const c = [...f.choices]; c[i] = { ...c[i], [field]: value }; return { ...f, choices: c }; });
@@ -307,6 +323,7 @@ export default function EventManager({ showToast }) {
           <p className="page-subtitle">共 {events.length} 個事件・顯示 {filteredEvents.length} 個</p>
         </div>
         <div className="flex gap-3" style={{ flexWrap:'wrap' }}>
+          <button className="btn btn-ghost btn-sm" onClick={handleSyncStandard} title="強制同步最新正規化事件庫至 Firestore">🔄 同步標準事件庫</button>
           <button className="btn btn-ghost btn-sm" onClick={handleExport}>📤 匯出 JSON</button>
           <label className="btn btn-ghost btn-sm" style={{ cursor:'pointer' }}>
             📥 匯入 JSON

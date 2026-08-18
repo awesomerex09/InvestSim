@@ -404,8 +404,12 @@ class GameEngine {
 
     // Peak and MDD
     if (netWorth > stats.peakNetWorth) stats.peakNetWorth = netWorth;
-    const drawdown = (stats.peakNetWorth - netWorth) / stats.peakNetWorth * 100;
-    if (drawdown > stats.mdd) stats.mdd = drawdown;
+    if (stats.peakNetWorth > 0) {
+      const drawdown = Math.max(0, (stats.peakNetWorth - netWorth) / stats.peakNetWorth * 100);
+      if (drawdown > stats.mdd) stats.mdd = drawdown;
+    } else {
+      stats.mdd = 0;
+    }
   }
 
   /**

@@ -397,7 +397,7 @@ class UI {
 
   showAchievementUnlock(achievement) {
     this.showToast(
-      `🎉 成就解鎖：${achievement.icon} ${achievement.name}！`,
+      `🎉 成就解鎖：${achievement.icon || '🏆'} ${achievement.title || achievement.name || '成就'}！`,
       'success',
       4000
     );
@@ -410,7 +410,9 @@ class UI {
   renderEndScreen() {
     const s  = window.gameEngine.state;
     const nw = window.gameEngine.getNetWorth();
-    const pct = (nw / s.startNetWorth - 1) * 100;
+    const pct = (s.startNetWorth && s.startNetWorth > 0)
+      ? ((nw / s.startNetWorth - 1) * 100)
+      : (nw > 0 ? 100 : (nw < 0 ? -100 : 0));
 
     const titleEl   = document.getElementById('end-title');
     const reasonEl  = document.getElementById('end-reason');
@@ -420,11 +422,11 @@ class UI {
     const monthsEl  = document.getElementById('end-months');
     const achGrid   = document.getElementById('achievements-grid');
 
-    if (titleEl)  titleEl.textContent  = s.endReason;
-    if (reasonEl) reasonEl.textContent = s.endMessage;
+    if (titleEl)  titleEl.textContent  = s.endReason || '人生總結';
+    if (reasonEl) reasonEl.textContent = s.endMessage || '';
     if (nwEl)     nwEl.textContent     = GameEngine.formatNTD(nw);
     if (retEl)    retEl.textContent    = GameEngine.formatPct(pct);
-    if (mddEl)    mddEl.textContent    = `${s.stats.mdd.toFixed(1)}%`;
+    if (mddEl)    mddEl.textContent    = `${(s.stats.mdd || 0).toFixed(1)}%`;
     if (monthsEl) monthsEl.textContent = `${(s.year - 1) * 12 + s.month}`;
 
     if (achGrid && s.achievements.length > 0) {
@@ -433,8 +435,8 @@ class UI {
         if (!ach) return '';
         return `
           <div class="achievement-chip" style="animation-delay: ${i * 0.1}s">
-            <div class="achievement-icon">${ach.icon}</div>
-            <div class="achievement-name">${ach.name}</div>
+            <div class="achievement-icon">${ach.icon || '🏆'}</div>
+            <div class="achievement-name">${ach.title || ach.name || '成就'}</div>
           </div>
         `;
       }).join('');
