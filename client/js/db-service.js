@@ -179,9 +179,18 @@ class DatabaseService {
    * @returns {{ events: Array, achievements: Array }}
    */
   async fetchDynamicConfig() {
+    let localEvents = this._defaultEvents;
+    try {
+      const res = await fetch('./data/events.json');
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json) && json.length > 0) localEvents = json;
+      }
+    } catch (_) {}
+
     if (!this.db) {
       return {
-        events:       this._defaultEvents,
+        events:       localEvents,
         achievements: this._defaultAchievements,
         endings:      this._defaultEndings
       };
@@ -194,14 +203,14 @@ class DatabaseService {
       const endingsDoc      = await getDoc(doc(this.db, 'config', 'endings'));
 
       return {
-        events:       eventsDoc.exists() ? eventsDoc.data().list       : this._defaultEvents,
-        achievements: achievementsDoc.exists() ? achievementsDoc.data().list : this._defaultAchievements,
-        endings:      endingsDoc.exists() ? endingsDoc.data().list     : this._defaultEndings
+        events:       (eventsDoc.exists() && eventsDoc.data().list?.length > 0) ? eventsDoc.data().list : localEvents,
+        achievements: (achievementsDoc.exists() && achievementsDoc.data().list?.length > 0) ? achievementsDoc.data().list : this._defaultAchievements,
+        endings:      (endingsDoc.exists() && endingsDoc.data().list?.length > 0) ? endingsDoc.data().list : this._defaultEndings
       };
     } catch (err) {
-      console.warn('[DB] Failed to fetch config, using local defaults.', err);
+      console.warn('[DB] Failed to fetch Firestore config, using local fallback.', err);
       return {
-        events:       this._defaultEvents,
+        events:       localEvents,
         achievements: this._defaultAchievements,
         endings:      this._defaultEndings
       };

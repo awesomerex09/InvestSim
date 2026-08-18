@@ -50,27 +50,34 @@
 ```text
 InvestSim/
 ├── client/                    ← 玩家端遊戲（純靜態，部署到 GitHub Pages）
-│   ├── index.html             ← 主遊戲頁面（含 App Controller）
+│   ├── index.html             ← 主遊戲頁面（含 App Controller 與 HUD）
 │   ├── css/style.css          ← Apple Design 視覺系統
+│   ├── data/
+│   │   └── events.json        ← 全量 500+ 事件備份資料庫
 │   └── js/
 │       ├── firebase-config.js ← Firebase 設定
-│       ├── db-service.js      ← Firestore 讀寫（事件/成就/玩家數據）
+│       ├── db-service.js      ← Firestore 讀寫（事件/成就/結局/玩家數據）
 │       ├── auth.js            ← Google 登入
-│       ├── game-engine.js     ← 市場模擬引擎、事件觸發、成就判斷
-│       └── ui.js              ← 畫面控制、事件卡片渲染
+│       ├── game-engine.js     ← 市場模擬引擎、事件觸發、成就與結局判斷
+│       ├── log-tracker.js     ← 遊戲歷程與軌跡紀錄
+│       └── ui.js              ← 畫面控制、事件卡片渲染與數值反饋
 ├── admin/                     ← 管理後台（React + Vite，本機運行）
 │   └── src/
 │       ├── pages/
-│       │   ├── EventManager.jsx       ← 事件 CRUD + 匯入/匯出 + 篩選
-│       │   ├── AchievementManager.jsx ← 成就管理
+│       │   ├── EventManager.jsx       ← 事件 CRUD + GUI 編輯器 + 篩選
+│       │   ├── AchievementManager.jsx ← 成就管理 + GUI 條件編輯器
+│       │   ├── EndingManager.jsx      ← 結局管理 + GUI 條件編輯器
 │       │   └── Dashboard.jsx          ← 數據儀表板
 │       ├── components/
-│       │   └── EventSkillTree.jsx     ← 樹狀圖視覺化
+│       │   └── EventSkillTree.jsx     ← 樹狀圖/年齡分層視覺化
 │       └── data/
-│           ├── seedInvestSim.js       ← InvestSim 預設事件（投資類）
-│           └── seedLifeTwFull.js      ← Life-TW 全量事件（人生類，500+ 筆）
+│           ├── seedInvestSim.js       ← 投資核心宏觀事件
+│           ├── seedLifeTwFull.js      ← 人生全量事件（500+ 筆正規化資料）
+│           ├── seedAchievements.js    ← 預設成就庫
+│           └── seedEndings.js         ← 預設結局庫
 ├── firebase/                  ← Firestore 規則設定
-└── update_github.bat          ← 一鍵更新到 GitHub（Windows）
+├── skill.md                   ← 系統架構與事件設計官方規範手冊
+└── update_github.bat          ← 一鍵更新到 GitHub（Windows 自動化腳本）
 ```
 
 ---
@@ -95,34 +102,28 @@ npm run dev
 
 ---
 
-## 📝 事件 JSON 格式說明（便於改版複用）
+## 📖 系統架構手冊 (skill.md)
+詳細的事件分類體系、資料流管道、生命週期六大年齡段排程、風險回報矩陣以及 6 大合規性檢驗規則，請直接參閱專案根目錄的 **[skill.md](file:///C:/Users/VillainPrime/Desktop/InvestSim/skill.md)**。
 
-所有事件均以 JSON 格式儲存於 Firestore `config/events`，可透過後台「📤 匯出 JSON」取得完整範本：
+---
 
-```json
-{
-  "id": "e_unique_id",
-  "title": "事件名稱",
-  "description": "事件描述文字",
-  "type": "macro | life | childhood | crypto | realEstate | tech | blackswan | routine",
-  "icon": "📈",
-  "sentiment": "positive | negative | neutral | critical",
-  "enabled": true,
-  "triggerType": "fixed_age | age_range | random",
-  "triggerAge": 25,
-  "minAge": 20,
-  "maxAge": 40,
-  "probability": 0.1,
-  "prerequisites": ["e_other_event_id"],
-  "statReq": { "stat": "intelligence", "min": 60 },
-  "effectStr": "s.lifeStats.happiness -= 5; return {twStock: 10};",
-  "choices": [
-    { "text": "選項文字", "risk": "low | medium | high | extreme", "effectStr": "return {twStock: 5};" }
-  ]
-}
-```
+## 👶 成年前後核心機制說明 (0-17 歲 vs 18+ 歲)
 
-> 💡 `effectStr` 可直接操作狀態物件 `s`（含 `s.lifeStats`、`s.portfolio`、`s.prices`），並 `return` 市場波動物件。
+InvestSim 採用精細的生命週期兩階段切換設計：
+
+1. **童年與青少年期 (0 ~ 17 歲 / 未成年)**：
+   - **時間步長**：以「年」為單位推進（每點擊一次為「長大一歲 ▶」）。
+   - **生活開銷**：生活費 0 元（由父母扶養，不扣除每月 3 萬元開銷）。
+   - **投資帳戶**：右側操作面板處於鎖定狀態（`locked`），顯示「🔒 投資帳戶將於 18 歲解鎖」，禁止主動交易股票/房產/加密貨幣。
+   - **事件分發**：僅觸發啟蒙、才藝、義務教育、人際與家庭成長事件。
+   - **生存保護**：未成年不進行破產或負債結局判定，死亡機率極低。
+
+2. **成年與獨立期 (18 歲以上 / 成年)**：
+   - **時間步長**：以「月」為單位推進（每點擊一次為「下一個月 ▶」，每 12 個月增長一歲）。
+   - **生活開銷**：每月自動扣除基本生活費（NT$30,000 / 月）。
+   - **投資帳戶**：右側主動交易面板與手機端 Assistive Touch 白點全面解鎖，支援台股、美股、加密貨幣、房地產、黃金、定期定額與槓桿信貸。
+   - **事件分發**：全面開放總體經濟、企業財報、加密浪潮、房市政策、職場升遷與黑天鵝事件。
+   - **結局判定**：開啟破產、現金斷流、爆富退休、身心俱疲與壽終正寢等動態結局結算。
 
 ---
 
