@@ -1,8 +1,4 @@
-// ============================================================
-// InvestSim — Core Investment, Macro & Asset Class Seed Events
-// Total Events: 16
-// ============================================================
-
+// InvestSim — Core Investment & Macro Events (16 events)
 export const INVESTSIM_EVENTS = [
   {
     "id": "e_invest_bull",
@@ -610,14 +606,14 @@ export const INVESTSIM_EVENTS = [
     "id": "e_lifetw_chain_marketRecover",
     "title": "股災後強勁V型反彈",
     "description": "熬過那場股災，市場V型反轉、屢創新高——你當年沒賣的持股不僅回本，還多賺一大截。",
-    "type": "tech",
+    "type": "macro",
     "icon": "🦢",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 25,
-    "minAge": 18,
-    "maxAge": 100,
+    "minAge": 25,
+    "maxAge": 80,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -893,7 +889,7 @@ export const INVESTSIM_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 22,
+    "triggerAge": 18,
     "minAge": 18,
     "maxAge": 100,
     "probability": 0.1,

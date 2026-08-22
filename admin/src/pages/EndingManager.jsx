@@ -399,6 +399,20 @@ export default function EndingManager({ showToast }) {
     }
   }
 
+  async function clearAllEndings() {
+    if (!confirm(`⚠️ 確定要清除全部 ${endings.length} 筆結局嗎？\n此操作無法還原！`)) return;
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'config', 'endings'), { list: [] });
+      setEndings([]);
+      showToast('🗑️ 全部結局已清除', 'info');
+    } catch (err) {
+      showToast('清除失敗: ' + err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function handleExport() {
     const blob = new Blob([JSON.stringify(endings, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
@@ -447,6 +461,7 @@ export default function EndingManager({ showToast }) {
             📥 匯入 JSON
             <input type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
           </label>
+          <button className="btn btn-danger btn-sm" onClick={clearAllEndings} disabled={saving || endings.length === 0}>🗑️ 清除全部</button>
           <button className="btn btn-primary" onClick={openNew}>＋ 新增結局</button>
         </div>
       </div>

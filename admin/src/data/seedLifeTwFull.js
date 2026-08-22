@@ -1,8 +1,4 @@
-// ============================================================
-// InvestSim — Normalized Full Life & Childhood Events
-// Total Events: 514
-// ============================================================
-
+// InvestSim — Life & Childhood Events (514 events)
 export const LIFE_TW_EVENTS = [
   {
     "id": "e_life_001",
@@ -13,11 +9,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "negative",
     "enabled": true,
     "triggerType": "fixed_age",
-    "triggerAge": 17,
-    "minAge": 17,
-    "maxAge": 17,
+    "triggerAge": 25,
+    "minAge": 25,
+    "maxAge": 25,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_life_relationship_married"
+    ],
     "statReq": {
       "stat": "appearance",
       "min": 0
@@ -727,7 +725,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 18,
     "maxAge": 100,
     "probability": 0.08,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_career_first_job"
+    ],
     "statReq": {
       "stat": "intelligence",
       "min": 50
@@ -1460,8 +1460,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_run",
-    "title": "RUN",
-    "description": "你整天在外奔跑玩耍，越長越勇。",
+    "title": "在公園和朋友奔跑玩耍",
+    "description": "午後的陽光斜打在操場上，你和玩伴追著彼此滿場跑，跌倒了拍拍膝蓋爬起來繼續追，那時候的快樂就是這麼簡單。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -1494,8 +1494,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sibling",
-    "title": "SIBLING",
-    "description": "家裡多了個弟弟／妹妹，你升格當哥哥／姊姊。",
+    "title": "和兄弟姊妹打架又和好",
+    "description": "你和兄弟姊妹為了搶電視遙控器大吵一架，哭鬧、告狀、各自關房門，晚餐時又坐在一起，什麼事都沒發生一樣。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -1528,8 +1528,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_cousin",
-    "title": "COUSIN",
-    "description": "過年親戚聚會，你收紅包也被問成績。",
+    "title": "過年和堂表兄弟姊妹玩耍",
+    "description": "過年或暑假，你和堂表兄弟姊妹聚在阿公阿嬤家，在院子裡瘋玩一整天，那種熱鬧在長大之後很難再找到了。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -1562,8 +1562,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_scary",
-    "title": "SCARY",
-    "description": "你怕黑怕鬼，晚上不敢自己睡。",
+    "title": "兒時的恐怖怪談與惡夢",
+    "description": "鄰居家的老阿嬤說牆角有東西在動，你那天晚上抱著棉被，眼睛始終沒闔上，以為一閉眼什麼就會出現。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -1733,7 +1733,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_運動會",
     "title": "運動會",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "學校運動會到了，在操場上奔跑的你全力衝刺，不管跑第一還是最後，那段汗水淋漓的回憶都是青春最燦爛的片段。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -1980,7 +1980,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_校外教學",
     "title": "校外教學",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "老師帶著全班去科博館校外教學，你在展覽館前拍了張歪掉的合照，回家後還寫了一篇洋洋灑灑的心得。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -2119,7 +2119,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_腸病毒停課",
     "title": "腸病毒停課",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "班上爆發腸病毒，衛生所公告停課一週。在家的日子說是休息，媽媽催功課催得比平時更緊。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -2153,7 +2153,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_夜市小遊戲",
     "title": "夜市小遊戲",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "夜市套圈圈攤前，你花了一百塊，套到一隻廉價的玩具。那晚的芒果刨冰才是真正的主角。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -2187,7 +2187,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_被老師罰",
     "title": "被老師罰",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "上課偷傳紙條被老師當場抓到，罰站後排一節課，臉紅到耳根，回家還沒敢說實話。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -2255,7 +2255,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_會考",
     "title": "會考",
-    "description": "",
+    "description": "會考——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -2449,13 +2449,13 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_學測",
     "title": "學測",
-    "description": "",
+    "description": "學測——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "childhood",
     "icon": "🎓",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 10,
+    "triggerAge": 17,
     "minAge": 17,
     "maxAge": 17,
     "probability": 1,
@@ -2489,7 +2489,7 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 10,
+    "triggerAge": 17,
     "minAge": 17,
     "maxAge": 17,
     "probability": 0.1,
@@ -2572,7 +2572,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_科大出師",
     "title": "科大出師",
-    "description": "",
+    "description": "科大出師——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -2687,7 +2687,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 22,
     "maxAge": 23,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_university"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -2748,7 +2750,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_career_start",
     "title": "CAREER_START",
-    "description": "",
+    "description": "CAREER_START——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -3419,7 +3421,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 28,
     "maxAge": 48,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_career_first_job"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -3656,7 +3660,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_8+9漏氣",
     "title": "8+9漏氣",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "一群騎機車的同學找你出去兜風，說去超商集合再決定去哪。你站在巷口猶豫了很久，這條路是否要踏上去。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -3869,11 +3873,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "negative",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
+    "triggerAge": 24,
+    "minAge": 24,
     "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_混幫派"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4607,11 +4613,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4641,11 +4649,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4712,11 +4722,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.18,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4746,11 +4758,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.16,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4780,11 +4794,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.16,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4809,16 +4825,18 @@ export const LIFE_TW_EVENTS = [
     "id": "e_lifetw_探監",
     "title": "探監",
     "description": "家人來探監，隔著玻璃相見，讓你五味雜陳。",
-    "type": "childhood",
+    "type": "life",
     "icon": "🐣",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 22,
+    "minAge": 22,
+    "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4848,11 +4866,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 70,
+    "triggerAge": 24,
+    "minAge": 24,
+    "maxAge": 72,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4882,11 +4902,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
     "maxAge": 70,
     "probability": 0.12,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -4917,10 +4939,12 @@ export const LIFE_TW_EVENTS = [
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 16,
-    "minAge": 16,
-    "maxAge": 17,
+    "minAge": 18,
+    "maxAge": 50,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_life_relationship_married"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -5537,7 +5561,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 26,
     "maxAge": 65,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_life_relationship_serious"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -6737,7 +6763,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_買車",
     "title": "買車",
-    "description": "",
+    "description": "買車——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "🚗",
     "sentiment": "neutral",
@@ -6771,15 +6797,15 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_chain_carLoan",
     "title": "沉重車貸生活壓力",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "購車讓你背上一筆不輕的貸款，每個月帳戶固定扣款，現金流吃緊，卻又難以回頭。",
     "type": "life",
     "icon": "🚗",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 28,
+    "triggerAge": 22,
     "minAge": 22,
-    "maxAge": 65,
+    "maxAge": 60,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -6944,7 +6970,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_本命年",
     "title": "本命年",
-    "description": "",
+    "description": "本命年——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -7562,7 +7588,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_疫情",
     "title": "疫情",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "全台爆發嚴重疫情，進入三級警戒。學校停課、商店封閉，你和家人靠著囤積的物資度過這段漫長的隔離日子。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -8007,7 +8033,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_從政",
     "title": "從政",
-    "description": "",
+    "description": "從政——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -8440,10 +8466,12 @@ export const LIFE_TW_EVENTS = [
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 30,
-    "minAge": 26,
+    "minAge": 30,
     "maxAge": 75,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_選舉造勢"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -8511,10 +8539,12 @@ export const LIFE_TW_EVENTS = [
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 30,
-    "minAge": 26,
+    "minAge": 30,
     "maxAge": 75,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_bigFortune"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -8572,7 +8602,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_選民服務",
     "title": "選民服務",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "選民找上門，希望你幫忙「喬」一件事。民意代表嘛，有時候要有所取捨，你心裡盤算著這條線該怎麼踩。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -8683,11 +8713,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "positive",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 70,
+    "triggerAge": 30,
+    "minAge": 30,
+    "maxAge": 75,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_選舉造勢"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -8888,16 +8920,18 @@ export const LIFE_TW_EVENTS = [
     "id": "e_lifetw_chain_shakeCurse",
     "title": "爭議纏身民調直落",
     "description": "「死亡之握」的衰運發酵：你莫名捲入一樁爭議、金流又離奇失利，媒體窮追猛打、民調直落。",
-    "type": "childhood",
+    "type": "life",
     "icon": "🐣",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 30,
+    "minAge": 30,
+    "maxAge": 75,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_bigFortune"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -8992,7 +9026,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_幣圈梭哈",
     "title": "幣圈梭哈",
-    "description": "",
+    "description": "幣圈梭哈——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "₿",
     "sentiment": "neutral",
@@ -9223,7 +9257,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_星途",
     "title": "星途",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "一家經紀公司的星探來搭話，說你的外型氣質很適合演藝圈，問你有沒有興趣接受培訓、嘗試看看。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -9328,7 +9362,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_應援之路",
     "title": "應援之路",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "偶像在全台巡迴演唱，你一場不漏地追，舉著螢光棒大喊名字，雖然薪水花了一半，還是覺得值得。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -9640,7 +9674,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_啦啦隊退役",
     "title": "啦啦隊退役",
-    "description": "",
+    "description": "啦啦隊退役——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -9851,16 +9885,18 @@ export const LIFE_TW_EVENTS = [
     "id": "e_lifetw_chain_cheerScandal",
     "title": "啦啦隊地下戀情曝光",
     "description": "狗仔跟拍多時，你和球員的地下戀情登上頭條，球團震怒、粉絲炎上，你被推上風口浪尖。",
-    "type": "childhood",
+    "type": "life",
     "icon": "🐶",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 22,
+    "minAge": 22,
+    "maxAge": 45,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_應援之路"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -10347,9 +10383,9 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "critical",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 70,
+    "triggerAge": 24,
+    "minAge": 24,
+    "maxAge": 50,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -10659,7 +10695,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_電競賽季",
     "title": "電競賽季",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "班際電競比賽開打，你代表班上出賽，決賽最後一局全員爆發，同學們激動地跳起來，那個瞬間你永遠記得。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -11113,7 +11149,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_實況拚人氣",
     "title": "實況拚人氣",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你開始在平台上直播打遊戲，最初觀看人數掛零，但你固定時間開台，慢慢培養出一批固定觀眾，頻道數字緩緩爬升。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -11147,7 +11183,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_爐石戰Lo傑",
     "title": "爐石戰LO傑",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你在爐石傳說的天梯一路刷到傳說等級，還赢得了一個線上小錦標賽。現在圈子裡已經有人知道你的名號了。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -11181,7 +11217,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_LOL戰前職業",
     "title": "LOL戰前職業",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你的英雄聯盟積分排名躍上頂端，有賽事主辦方私訊詢問，想邀你參加職業選手甄選。業餘與職業的邊界，現在就在你眼前。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -11885,9 +11921,9 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "critical",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
+    "triggerAge": 22,
     "minAge": 22,
-    "maxAge": 70,
+    "maxAge": 45,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -12091,18 +12127,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_debtSpiral",
-    "title": "CHAIN_DEBTSPIRAL",
-    "description": "循環利息利滾利，你以卡養卡、拆東牆補西牆，債務像雪球越滾越大，成了名副其實的『卡奴』。",
-    "type": "childhood",
+    "title": "債務螺旋失控惡化",
+    "description": "利滾利，你的債務在短短幾個月內翻了好幾倍，收入再怎麼努力都還不上，你開始失眠，感覺自己快撐不住了。",
+    "type": "life",
     "icon": "🏦",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 25,
+    "minAge": 25,
+    "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_loanshark"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -12204,10 +12242,12 @@ export const LIFE_TW_EVENTS = [
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 25,
-    "minAge": 22,
+    "minAge": 25,
     "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_loanshark"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -12514,16 +12554,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_stageBacklash",
-    "title": "CHAIN_STAGEBACKLASH",
-    "description": "你擺臉色的影片瘋傳，網友批你耍大牌、不敬業，你發文回應卻越描越黑，主辦與品牌開始跟你切割…",
-    "type": "childhood",
+    "title": "演出風波引發輿論反彈",
+    "description": "你的一場演出引發了巨大爭議，網路上鍵盤俠的砲火蜂擁而至，你陷入了一場說不清楚的輿論風暴。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 20,
+    "minAge": 20,
+    "maxAge": 55,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -12657,7 +12697,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_爆紅",
     "title": "爆紅",
-    "description": "",
+    "description": "爆紅——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -12832,18 +12872,21 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_research",
-    "title": "CHAIN_RESEARCH",
-    "description": "研究卡關多年、經費吃緊、同儕紛紛轉行——你要繼續埋首下去嗎？",
-    "type": "childhood",
+    "title": "長期學術研究計畫",
+    "description": "你的研究成果開始受到國際期刊的關注，多篇論文登上頂級學術期刊，學術圈裡的人都知道你這個名字。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 30,
+    "minAge": 30,
+    "maxAge": 65,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_研究所",
+      "e_lifetw_投身研究"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -12866,18 +12909,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_nobelNom",
-    "title": "CHAIN_NOBELNOM",
-    "description": "你的研究影響力持續發酵，國際間傳出你被列為諾貝爾獎候選人的消息。",
-    "type": "childhood",
+    "title": "諾貝爾獎候選提名",
+    "description": "你的研究影響力持續發酵，國際間傳出你被列為諾貝爾獎候選人的消息，媒體紛紛來電採訪，你低調回應一切尚未確定。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
-    "probability": 0.1,
-    "prerequisites": [],
+    "triggerAge": 40,
+    "minAge": 45,
+    "maxAge": 80,
+    "probability": 0.02,
+    "prerequisites": [
+      "e_lifetw_chain_research"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -12900,18 +12945,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_nobelWin",
-    "title": "CHAIN_NOBELWIN",
-    "description": "諾貝爾獎揭曉的季節到了，全世界的目光聚焦在斯德哥爾摩…",
-    "type": "childhood",
+    "title": "榮獲諾貝爾獎",
+    "description": "諾貝爾獎揭曉的季節到了，全世界的目光聚焦在斯德哥爾摩。你的名字出現在頒獎台上，那份榮耀讓你想起了年少時一個人在實驗室裡苦熬的夜晚。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
-    "probability": 0.1,
-    "prerequisites": [],
+    "triggerAge": 42,
+    "minAge": 45,
+    "maxAge": 80,
+    "probability": 0.02,
+    "prerequisites": [
+      "e_lifetw_chain_nobelNom"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -13141,16 +13188,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_lateRetire",
-    "title": "CHAIN_LATERETIRE",
-    "description": "",
-    "type": "childhood",
+    "title": "延遲退休繼續衝刺",
+    "description": "原本計劃退休的年齡到了，你卻發現自己停不下來，選擇繼續在職場發光發熱，同事都說你是不知老之將至。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 55,
+    "minAge": 55,
+    "maxAge": 75,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -13176,7 +13223,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_交棒",
     "title": "交棒",
-    "description": "",
+    "description": "交棒——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -13311,8 +13358,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_acad",
-    "title": "SK_ACAD",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "title": "學術菁英路線選擇",
+    "description": "你在高中階段確立了自己的方向——全力衝刺學業與學術競賽，放棄了部分社交，把所有時間投入教室和圖書館。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -13320,7 +13367,7 @@ export const LIFE_TW_EVENTS = [
     "triggerType": "age_range",
     "triggerAge": 16,
     "minAge": 16,
-    "maxAge": 17,
+    "maxAge": 18,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -13345,7 +13392,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_tech",
-    "title": "SK_TECH",
+    "title": "科技業精英路線",
     "description": "你接外包案／開發小 App，技術直接變現。",
     "type": "life",
     "icon": "👤",
@@ -13379,7 +13426,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_biz",
-    "title": "SK_BIZ",
+    "title": "商業創業路線",
     "description": "你搞副業：擺攤、團購主、蝦皮賣家，賺了不少外快。",
     "type": "life",
     "icon": "👤",
@@ -13390,7 +13437,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 18,
     "maxAge": 66,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_career_first_job"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -13413,7 +13462,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_art",
-    "title": "SK_ART",
+    "title": "藝術創作路線",
     "description": "你上傳作品／街頭表演／參加比賽，開始小有名氣。",
     "type": "childhood",
     "icon": "🐣",
@@ -13447,7 +13496,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_talk",
-    "title": "SK_TALK",
+    "title": "社交人脈路線",
     "description": "你口若懸河，當上業務冠軍／社區里長／活動主持人。",
     "type": "life",
     "icon": "👤",
@@ -13481,7 +13530,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_ath",
-    "title": "SK_ATH",
+    "title": "運動競技路線",
     "description": "你體育超強，教練找你進校隊拚國手…",
     "type": "childhood",
     "icon": "🐣",
@@ -13552,8 +13601,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_street",
-    "title": "SK_STREET",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "title": "江湖街頭混跡闖蕩",
+    "description": "你靠著人脈和膽識在街頭打滾，建立起自己的一套江湖規矩，遊走在灰色地帶，尋找屬於自己的立足之地。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -13586,7 +13635,7 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_sk_spirit",
-    "title": "SK_SPIRIT",
+    "title": "靈修宗教路線",
     "description": "你替人算命、收驚、當宮廟志工，信眾絡繹不絕。",
     "type": "life",
     "icon": "🛕",
@@ -13908,11 +13957,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "positive",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 70,
+    "triggerAge": 55,
+    "minAge": 55,
+    "maxAge": 90,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_入獄"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -14285,7 +14336,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_天災",
     "title": "天災",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "強颱正面來襲，學校停課，路樹被連根拔起，停電停水三天，你和家人靠著囤的泡麵和罐頭熬過這段時間。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -15214,16 +15265,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_cult",
-    "title": "CHAIN_CULT",
-    "description": "教團越搞越誇張——師父要信眾「供養百萬名車」表孝心、宣稱自己能「發光分身」、還賣加持照片斂財，要你變賣家產證明信仰…",
-    "type": "childhood",
+    "title": "誤入神秘教派",
+    "description": "你在人生低谷時遇到了一群看起來和善的陌生人，他們的言論讓你感到心靈得到了支撐，但漸漸地你發現這個圈子並不尋常。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 25,
+    "minAge": 25,
+    "maxAge": 60,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -15286,7 +15337,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_網路爆紅",
     "title": "網路爆紅",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你隨手拍的一支短影片被大帳號轉發，一夜之間衝到百萬觀看，留言區讚美和謾罵各占一半，你笑著盯著螢幕看了好久。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -16692,7 +16743,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_存股有成",
     "title": "存股有成",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "當年投入的存股計畫，歷經多年的除權息複利累積，股息已足以支應一部分日常開銷，你的資產在靜默中持續成長。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -16970,7 +17021,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_房市風向",
     "title": "房市風向",
-    "description": "",
+    "description": "房市風向——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -17040,16 +17091,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_loanshark",
-    "title": "CHAIN_LOANSHARK",
-    "description": "地下錢莊利滾利，堂口的兄弟找上門逼債，撂話再不還就見血…",
-    "type": "childhood",
+    "title": "誤踩地下高利貸陷阱",
+    "description": "一時週轉不靈，你向地下錢莊借了一筆錢，利息滾利息，你才發現這個坑比你想像的深得多。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 25,
+    "minAge": 25,
+    "maxAge": 70,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -17074,18 +17125,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_loansharkCatch",
-    "title": "CHAIN_LOANSHARKCATCH",
-    "description": "躲債兩年，你還是被錢莊的人堵到，一頓毒打、斷手斷腳…",
-    "type": "childhood",
+    "title": "高利貸業者被警方逮捕",
+    "description": "警方大規模掃蕩地下錢莊，你的債主被逮捕收押。你的欠款問題在法律程序中進入了不確定的曠日廢時階段。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 26,
+    "minAge": 26,
+    "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_loanshark"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17116,10 +17169,12 @@ export const LIFE_TW_EVENTS = [
     "enabled": true,
     "triggerType": "age_range",
     "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 100,
+    "minAge": 25,
+    "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_混幫派"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17186,11 +17241,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 100,
+    "triggerAge": 24,
+    "minAge": 24,
+    "maxAge": 72,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_混幫派"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17213,16 +17270,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_heroReward",
-    "title": "CHAIN_HEROREWARD",
-    "description": "多年前你捨身相救的那個人，如今飛黃騰達，特地回來重謝、還提攜你一把。",
-    "type": "childhood",
+    "title": "英雄義舉獲得各界獎賞",
+    "description": "你挺身而出的義舉被社會廣泛報導，各方獎金和感謝狀接連而來，而你在意的從來不是這些，只是希望對方平安無事。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 20,
+    "minAge": 20,
+    "maxAge": 70,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -17254,11 +17311,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "negative",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 100,
+    "triggerAge": 28,
+    "minAge": 28,
+    "maxAge": 72,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_結婚"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17318,8 +17377,8 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_bullyKarma",
-    "title": "CHAIN_BULLYKARMA",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "title": "霸凌因果報應",
+    "description": "當年那些欺負別人的事，最終以某種方式回到了自己身上。有些帳，時間會幫你算清。",
     "type": "childhood",
     "icon": "🤖",
     "sentiment": "neutral",
@@ -17352,18 +17411,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_bizExpand",
-    "title": "CHAIN_BIZEXPAND",
-    "description": "你的公司站穩腳步，要不要大舉擴張、拚上市？",
-    "type": "childhood",
+    "title": "公司業務快速擴張",
+    "description": "你的公司營收開始快速成長，融資輪接連成功，員工人數從幾個人擴張到幾百人，媒體開始把你列為最具潛力的新創創辦人。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 30,
+    "minAge": 30,
+    "maxAge": 55,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_創業"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17423,18 +17484,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_bizPeak",
-    "title": "CHAIN_BIZPEAK",
-    "description": "公司成功上市／被高價併購，你搖身成為身價驚人的企業家。",
-    "type": "childhood",
+    "title": "事業登頂高峰期",
+    "description": "你的公司進入了最輝煌的時期，市佔率穩居行業前三，品牌知名度達到頂峰。每一個決策都牽動著整個產業的風向。",
+    "type": "life",
     "icon": "🏢",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 35,
+    "minAge": 35,
+    "maxAge": 60,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_bizExpand"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17457,18 +17520,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_unicorn",
-    "title": "CHAIN_UNICORN",
-    "description": "你的公司一路壯大，成為市值驚人的護國神山／國際獨角獸——你的名字登上財經雜誌與富豪榜封面。",
-    "type": "childhood",
+    "title": "新創獨角獸估值突破",
+    "description": "你的公司估值突破十億美元，正式躋身獨角獸俱樂部。投資人趨之若鶩，你的名字出現在每一份科技創業報告的封面。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 38,
+    "minAge": 38,
+    "maxAge": 65,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_bizPeak"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17491,18 +17556,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_empire",
-    "title": "CHAIN_EMPIRE",
-    "description": "你的商業帝國橫跨數十國、市值屢創新高，財富規模已是台灣頂尖——問鼎首富只是時間問題。",
-    "type": "childhood",
+    "title": "建立商業帝國版圖",
+    "description": "你的事業版圖從台灣延伸到全球，旗下擁有多個產業和子品牌，有人說你是這個時代的台灣奇蹟，有人說你是控制市場的壟斷者。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 42,
+    "minAge": 42,
+    "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_unicorn"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17525,18 +17592,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_worldRichest",
-    "title": "CHAIN_WORLDRICHEST",
-    "description": "你的財富版圖橫掃全球，市值一路衝破天際——地表沒有人比你更有錢。",
-    "type": "childhood",
+    "title": "登上世界首富排行榜",
+    "description": "《富比世》最新財富排名出爐，你的名字出現在全球前十名之列。鏡頭閃光燈打在你臉上，你笑著說這只是起點。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 45,
+    "minAge": 45,
+    "maxAge": 75,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_empire"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17668,11 +17737,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 100,
+    "triggerAge": 35,
+    "minAge": 35,
+    "maxAge": 80,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_life_relationship_married"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -17804,7 +17875,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_創作爆紅",
     "title": "創作爆紅",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你的漫畫、歌曲或文章在網路上意外大火，版權詢問和媒體採訪紛至沓來，你第一次感受到作品被世界看見的重量。",
     "type": "childhood",
     "icon": "🐣",
     "sentiment": "neutral",
@@ -17838,7 +17909,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_百萬YTR",
     "title": "百萬YTR",
-    "description": "",
+    "description": "百萬YTR——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -18149,18 +18220,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_metIdol",
-    "title": "CHAIN_METIDOL",
-    "description": "命運般地，你在私下場合認識了崇拜的那位名人，對方對你也有好感…",
-    "type": "childhood",
+    "title": "與名人偶像意外相識",
+    "description": "緣分就是這麼奇妙，你和那位名人在意想不到的場合再次相遇，這次有了更深入的交談，彼此留下了聯絡方式。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 20,
+    "minAge": 20,
+    "maxAge": 50,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_見到偶像"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -18220,18 +18293,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_celebWed",
-    "title": "CHAIN_CELEBWED",
-    "description": "你和名人步入禮堂，婚禮登上各大媒體版面，你成了「某某的另一半」。",
-    "type": "childhood",
+    "title": "與名人步入禮堂",
+    "description": "你和那位名人的感情水到渠成，婚禮登上各大媒體版面，你成了「某某的另一半」，人生從此走入了另一個次元。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 22,
+    "minAge": 22,
+    "maxAge": 55,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_metIdol"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -18467,16 +18542,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_keepEnd",
-    "title": "CHAIN_KEEPEND",
-    "description": "包養關係終究走到盡頭——對方捲款分手／被另一半抓包，你人財兩失。",
-    "type": "childhood",
+    "title": "維持穩定感情白頭偕老",
+    "description": "你和另一半相扶相持，在日常的柴米油鹽中磨合出了默契，既不轟轟烈烈，卻也踏實溫暖。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 22,
+    "minAge": 22,
+    "maxAge": 60,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -18635,7 +18710,9 @@ export const LIFE_TW_EVENTS = [
     "minAge": 50,
     "maxAge": 88,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_life_relationship_serious"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -19388,7 +19465,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_抬雞店概念",
     "title": "抬雞店概念",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你突發奇想，想開一家有特色的雞排店，商業計畫在腦中愈來愈清晰，問題是現在的口袋，到底夠不夠深？",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -19594,16 +19671,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_patron",
-    "title": "CHAIN_PATRON",
-    "description": "你攀附的大佬捲入弊案，檢調順藤摸瓜查到你頭上…",
-    "type": "childhood",
+    "title": "成為藝術文化贊助人",
+    "description": "你用累積的財富資助了幾位藝術家和文化團體，這種超越商業的滿足感讓你開始思考人生下半場的意義。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 40,
+    "minAge": 40,
+    "maxAge": 80,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -19672,11 +19749,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 22,
-    "minAge": 22,
+    "triggerAge": 24,
+    "minAge": 24,
     "maxAge": 70,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_混幫派"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -19736,18 +19815,20 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_yakuza",
-    "title": "CHAIN_YAKUZA",
-    "description": "跨海生意出了紕漏，三口組與台灣警方兩頭施壓，你嚇得魂不附體。",
-    "type": "childhood",
+    "title": "與黑道組織產生牽扯",
+    "description": "你和黑道組織的關係愈陷愈深，雙方之間已不再只是泛泛之交，而是牽扯出了說不清道不明的利益關係。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 25,
+    "minAge": 25,
+    "maxAge": 65,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_混幫派"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -20145,7 +20226,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_首長祝壽",
     "title": "首長祝壽",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "地方首長得知你已屆百歲高壽，特別登門祝壽，電視台跟拍了幾段。你笑著說：活這麼久沒什麼秘訣，就是不要想太多。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -20870,16 +20951,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_chronicHit",
-    "title": "CHAIN_CHRONICHIT",
-    "description": "長期放任慢性病，你併發了嚴重問題（中風／洗腎／心臟病），住進了醫院。",
-    "type": "childhood",
+    "title": "罹患慢性病長期調養",
+    "description": "健康檢查報告出來，醫生說你有幾個指數已經超標，需要長期用藥和生活習慣改變。你第一次感覺到身體在說話。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 35,
+    "minAge": 35,
+    "maxAge": 80,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -21081,7 +21162,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_職場難題",
     "title": "職場難題",
-    "description": "",
+    "description": "職場難題——這是一個影響你人生軌跡的重要時刻，考量後謹慎選擇。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -21149,7 +21230,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_一展長才",
     "title": "一展長才",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "終於遇到了一個能讓你盡情發揮的舞台，你把多年積累的技能和眼光傾注其中，成果讓所有人刮目相看。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",
@@ -21704,16 +21785,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_draftFraud",
-    "title": "CHAIN_DRAFTFRAUD",
-    "description": "檢調偵辦一起『免役舞弊集團』，當年你偽造免役證明的往事被翻了出來，你被列為被告…",
-    "type": "childhood",
+    "title": "偽造資料企圖逃避服役",
+    "description": "你試圖以偽造的醫療文件或其他手段規避兵役義務。這種事被發現的機率遠比你想的高，你心裡清楚這步棋有多危險。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
-    "triggerType": "fixed_age",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 0,
+    "triggerType": "age_range",
+    "triggerAge": 18,
+    "minAge": 18,
+    "maxAge": 24,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -21775,16 +21856,16 @@ export const LIFE_TW_EVENTS = [
   },
   {
     "id": "e_lifetw_chain_army",
-    "title": "CHAIN_ARMY",
-    "description": "部隊裡學長學弟制、站夜哨、跑五千、莒光日、五百障礙、被學長電——你在鋼鐵般的日子裡磨出硬漢心志，也交到一輩子的兵役兄弟。",
-    "type": "childhood",
+    "title": "入伍服役當兵",
+    "description": "體檢合格，你拿著入伍通知書在家人送行下踏入了軍營。往後這段時間，你將以國家意志來約束你的個人自由。",
+    "type": "life",
     "icon": "🤖",
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 0,
-    "minAge": 0,
-    "maxAge": 17,
+    "triggerAge": 18,
+    "minAge": 18,
+    "maxAge": 24,
     "probability": 0.1,
     "prerequisites": [],
     "statReq": {
@@ -21955,11 +22036,13 @@ export const LIFE_TW_EVENTS = [
     "sentiment": "neutral",
     "enabled": true,
     "triggerType": "age_range",
-    "triggerAge": 25,
-    "minAge": 22,
-    "maxAge": 70,
+    "triggerAge": 20,
+    "minAge": 20,
+    "maxAge": 35,
     "probability": 0.1,
-    "prerequisites": [],
+    "prerequisites": [
+      "e_lifetw_chain_draftFraud"
+    ],
     "statReq": {
       "stat": "none",
       "min": 0
@@ -22699,7 +22782,7 @@ export const LIFE_TW_EVENTS = [
   {
     "id": "e_lifetw_航海王",
     "title": "航海王",
-    "description": "這是一個動態事件，請進入遊戲體驗。",
+    "description": "你決定放棄台灣安穩的生活，帶著積蓄前往東南亞或日本重新開始。前途未知，但出發那天的心情是自由的。",
     "type": "life",
     "icon": "👤",
     "sentiment": "neutral",

@@ -240,6 +240,21 @@ export default function EventManager({ showToast }) {
     }
   }
 
+  async function clearAllEvents() {
+    if (!confirm(`⚠️ 確定要清除全部 ${events.length} 筆事件嗎？\n\n此操作無法還原！建議先「匯出 JSON」備份。`)) return;
+    if (!confirm(`再次確認：將徹底清空 Firestore 事件庫，共 ${events.length} 筆。確定嗎？`)) return;
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'config', 'events'), { list: [] });
+      setEvents([]);
+      showToast('🗑️ 全部事件已清除', 'info');
+    } catch (e) {
+      showToast('清除失敗: ' + e.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function toggleEnabled(ev) {
     try {
       const configRef = doc(db, 'config', 'events');
@@ -329,6 +344,7 @@ export default function EventManager({ showToast }) {
             📥 匯入 JSON
             <input type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
           </label>
+          <button className="btn btn-danger btn-sm" onClick={clearAllEvents} disabled={saving || events.length === 0} title="清除所有事件（不可還原）">🗑️ 清除全部</button>
           <button className="btn btn-primary" onClick={openNew}>＋ 新增事件</button>
         </div>
       </div>

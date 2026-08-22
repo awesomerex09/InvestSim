@@ -399,6 +399,20 @@ export default function AchievementManager({ showToast }) {
     }
   }
 
+  async function clearAllAchievements() {
+    if (!confirm(`⚠️ 確定要清除全部 ${achievements.length} 筆成就嗎？\n此操作無法還原！`)) return;
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'config', 'achievements'), { list: [] });
+      setAchievements([]);
+      showToast('🗑️ 全部成就已清除', 'info');
+    } catch (e) {
+      showToast('清除失敗: ' + e.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function handleExport() {
     const blob = new Blob([JSON.stringify(achievements, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
@@ -447,6 +461,7 @@ export default function AchievementManager({ showToast }) {
             📥 匯入 JSON
             <input type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
           </label>
+          <button className="btn btn-danger btn-sm" onClick={clearAllAchievements} disabled={saving || achievements.length === 0}>🗑️ 清除全部</button>
           <button className="btn btn-primary" onClick={openNew}>＋ 新增成就</button>
         </div>
       </div>
